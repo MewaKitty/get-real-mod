@@ -1,0 +1,151 @@
+@import url("https://fonts.googleapis.com/css2?family=Roboto:wght@900&family=Source+Sans+3:ital,wght@0,200..900;1,200..900&display=swap");
+.cardWrapper {
+	container-type: size;
+	aspect-ratio: 2 / 3;
+}
+.card {
+	height: 100%;
+	width: 100%;
+	border-radius: 10cqmin / 10cqmin;
+	border: white 6cqmin solid;
+	position: relative;
+	font-family: "Roboto", sans-serif;
+	font-weight: 900;
+	color: #ffffff;
+	letter-spacing: -3cqmin;
+}
+
+.ring {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	margin: auto;
+	width: 94%;
+	height: 90%;
+	transform: skewX(-23deg);
+	border-radius: 100%;
+	border: white 4.5cqmin solid;
+	pointer-events: none;
+}
+
+.smallTop,
+.smallBottom {
+	font-size: 30cqmin;
+	text-shadow: #000000 -2.2cqmin 2.2cqmin;
+	-webkit-text-stroke: black 1.4cqmin;
+	z-index: 2;
+	letter-spacing: -1cqmin;
+}
+
+.smallTop {
+	position: absolute;
+	top: 0;
+	left: 6cqmin;
+	translate: 0.4cqmin 0;
+}
+
+.smallBottom {
+	position: absolute;
+	bottom: 0;
+	right: 6cqmin;
+	rotate: 180deg;
+	translate: -0.4cqmin 0;
+}
+.bigNumber,
+.bigIcon {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+.bigNumber {
+	text-shadow: #000000 -4.4cqmin 4.4cqmin;
+	translate: 0.1cqmin 0;
+	-webkit-text-stroke: black 2.2cqmin;
+	z-index: 1;
+}
+.bigIcon {
+	z-index: 1;
+	display: flex;
+	align-items: center;
+	filter: drop-shadow(-3.4cqmin 3.4cqmin black);
+	justify-content: center;
+}
+.bigIcon svg {
+	width: var(--icon-size);
+	overflow: visible;
+	translate: 1.7cqmin 0;
+}
+.bigIcon svg * {
+	stroke: black;
+	stroke-width: 5%;
+}
+.smallIcon {
+	position: absolute;
+	top: 0;
+	left: 3.2cqmin;
+	width: 25cqmin;
+	filter: drop-shadow(-1.4cqmin 1.4cqmin black);
+}
+.smallIcon[data-flipped] {
+	right: 3.2cqmin;
+	bottom: 0;
+	top: unset;
+	left: unset;
+	rotate: 180deg;
+}
+.smallIcon svg {
+	overflow: visible;
+	translate: 1.7cqmin 0;
+}
+.smallIcon svg * {
+	stroke: black;
+	stroke-width: 5%;
+}
+.card[data-size="normal"] .bigNumber {
+	font-size: 72cqmin;
+}
+.card[data-size="small"] .bigNumber {
+	font-size: 68cqmin;
+}
+.card[data-size="smaller"] {
+	.bigNumber {
+		font-size: 56cqmin;
+		translate: -2cqmin 0;
+	}
+	.smallTop,
+	.smallBottom {
+		font-size: 28cqmin;
+	}
+	.smallTop {
+		left: 2cqmin;
+	}
+
+	.smallBottom {
+		right: 2cqmin;
+	}
+}
+
+.card[data-size="smallest"] {
+	.bigNumber {
+		font-size: 44cqmin;
+		translate: -2cqmin 0;
+	}
+	.smallTop,
+	.smallBottom {
+		font-size: 23cqmin;
+	}
+	.smallTop {
+		left: 2cqmin;
+	}
+
+	.smallBottom {
+		right: 2cqmin;
+	}
+}
