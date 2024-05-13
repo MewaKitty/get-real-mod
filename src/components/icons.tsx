@@ -42,6 +42,7 @@ export const icons = {
 		type: "both",
 		size: "57%",
 		element: (
+			// From https://www.svgrepo.com/svg/24968/prohibited-sign
 			<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 415.064 415.064" fill="currentColor">
 				<g>
 					<path
