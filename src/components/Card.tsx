@@ -7,7 +7,8 @@ const sizeForSymbol = (symbol: string) => {
 		return "normal";
 	}
 	if (symbol.length === 2) return "smaller";
-	if (symbol.length >= 3) return "smallest";
+	if (symbol.length === 3) return "smallest";
+	if (symbol.length >= 4) return "smallester";
 };
 
 const elementForSymbol = (symbol: string) => {
