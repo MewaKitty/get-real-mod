@@ -1,18 +1,22 @@
 {
+	"type": "module",
 	"name": "real-card-game",
 	"version": "0.1.0",
 	"private": true,
 	"scripts": {
-		"dev": "next dev",
+		"lint": "next lint",
+		"dev": "tsx server.ts",
 		"build": "next build",
-		"start": "next start",
-		"lint": "next lint"
+		"start": "NODE_ENV=production tsx server.ts"
 	},
 	"dependencies": {
 		"next": "14.2.3",
 		"react": "^18",
 		"react-dom": "^18",
-		"sass": "^1.77.1"
+		"sass": "^1.77.1",
+		"socket.io": "^4.7.5",
+		"socket.io-client": "^4.7.5",
+		"tsx": "^4.10.2"
 	},
 	"devDependencies": {
 		"@types/node": "^20",
