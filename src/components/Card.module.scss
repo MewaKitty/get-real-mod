@@ -149,3 +149,22 @@
 		right: 2cqmin;
 	}
 }
+
+.card[data-size="smallester"] {
+	.bigNumber {
+		font-size: 34cqmin;
+		translate: -2cqmin 0;
+		letter-spacing: -3.5cqmin;
+	}
+	.smallTop,
+	.smallBottom {
+		font-size: 19cqmin;
+	}
+	.smallTop {
+		left: 2cqmin;
+	}
+
+	.smallBottom {
+		right: 2cqmin;
+	}
+}
