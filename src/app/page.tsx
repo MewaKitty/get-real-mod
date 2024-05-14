@@ -1,40 +1,35 @@
+"use client";
+import { useEffect, useState } from "react";
 import styles from "./page.module.css";
+import { socket } from "../socket";
+import { Card as TCard } from "@/cards/card";
+import { Card } from "@/components/Card";
 
-const num = 10;
-const angleRange = (Math.PI * 3) / 2;
 export default function Home() {
+	const [temp, setTemp] = useState<TCard[]>([]);
+	useEffect(() => {
+		socket.onAny(console.log);
+		socket.emit("init", "foo");
+		socket.emit("name", "foo");
+		socket.on("game:hand", hand => {
+			setTemp(hand)
+		})
+	}, []);
+
 	return (
 		<main className={styles.main}>
-			<section className={styles.container}>
-				{[...Array(num)].map((_, i) => (
-					<div
-						className={styles.box}
-						style={{
-							backgroundColor: `#${(
-								Math.floor(
-									Math.abs(1000000 * Math.cos(i * 17 + 21))
-								) % 0x1000000
-							)
-								.toString(16)
-								.padStart(6, "0")}`,
-							transform: `translateX(${
-								45 *
-								Math.cos(
-									(angleRange / (num - 1)) * i -
-										(angleRange - Math.PI) / 2
-								)
-							}vw) translateY(${
-								-40 *
-								Math.sin(
-									(angleRange / (num - 1)) * i -
-										(angleRange - Math.PI) / 2
-								)
-							}vh)`,
-						}}
-						key={i}
-					></div>
-				))}
-			</section>
+		<button onClick={() => socket.emit("room:create", {
+			name: "test",
+			unlisted: false
+		})}>Create</button>
+		<button onClick={() => socket.emit("room:start", {
+			name: "test"
+		})}>Create</button>
+		<section>
+			{
+				temp.map(x => <Card symbol={x.type.toString()} color={x.color} key={`${x.type}${x.color}`} />)
+			}
+		</section>
 		</main>
 	);
 }

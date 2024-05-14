@@ -56,25 +56,44 @@ const ringBackgroundForColor = (color: string | string[]) => {
 	return typeof real === "string" ? real : real[0];
 };
 
-export const Card = ({
-	color,
-	symbol,
-	size = sizeForSymbol(symbol),
-	height = "100px",
-}: {
+interface CardOptions {
 	color: string | string[];
 	symbol: string;
-	size?: "normal" | "small" | "smaller" | "smallest";
+	flipped?: boolean;
+	size?: "normal" | "small" | "smaller" | "smallest" | "smallester";
 	height?: string;
-}) => {
+	pinned?: boolean;
+}
+
+export const Card = ({ color, symbol, flipped = false, size = sizeForSymbol(symbol), height = "100px", pinned = false }: CardOptions) => {
 	return (
-		<article className={styles.cardWrapper} style={{ height }}>
+		<article className={styles.cardWrapper} style={{ height, ...(flipped && { transform: "rotateY(180deg)" }), ...(pinned && { top: 0, left: 0, position: "absolute" }) }}>
 			<div className={styles.card} style={{ background: cardBackgroundForColor(color) }} data-size={size}>
 				{sideElementForSymbol(symbol)}
 				{sideElementForSymbol(symbol, true)}
 				{elementForSymbol(symbol)}
 				<div className={styles.ring} style={{ background: ringBackgroundForColor(color) }}></div>
 			</div>
+		</article>
+	);
+};
+
+export const BackCard = ({ height = "100px", flipped = false, pinned = false }: { height?: string; flipped?: boolean; pinned?: boolean }) => {
+	return (
+		<article className={styles.cardWrapper} style={{ height, ...(flipped && { transform: "rotateY(180deg)" }), ...(pinned && { top: 0, left: 0, position: "absolute" }) }}>
+			<div className={styles.card} style={{ backgroundColor: "black" }} data-size="normal">
+				<div className={styles.backIcon}>GET REAL</div>
+				<div className={styles.ring} style={{ backgroundColor: "#3C5B6F", borderColor: "#3C5B6F" }}></div>
+			</div>
+		</article>
+	);
+};
+
+export const DualCard = ({ height = "100px", flipped = false, color, symbol, size = sizeForSymbol(symbol) }: Omit<CardOptions, "pinned">) => {
+	return (
+		<article className={styles.dualCard} style={{ height }}>
+			<BackCard height={height} pinned flipped={flipped}/>
+			<Card symbol={symbol} color={color} height={height} flipped={!flipped} size={size} pinned />
 		</article>
 	);
 };

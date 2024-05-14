@@ -1,6 +1,7 @@
 export interface Card {
 	type: string | number;
-	color: string | string[];	
+	color: string | string[];
+
 }
 export type CardType = number | `+${number}` | `×${number}` | "reverse" | "skip";
 
@@ -39,3 +40,10 @@ export const createDeck = () => {
 	return deck;
 };
 
+export const canPlay = (current: Card, color: string, card: Card) => {
+	if (card.color instanceof Array) return card.color.includes(color);
+	if (card.color === "multicolor") return true;
+	if (color === card.color) return true;
+	if (current.type === card.type) return true;
+	return false;
+}
