@@ -8,5 +8,5 @@ export const getPlayerId = () => {
 }
 
 export const usePlayerName = () => {
-	return useLocalStorage("playerName", "");
+	return useState(v4())//useLocalStorage("playerName", v4());
 }

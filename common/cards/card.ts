@@ -51,10 +51,18 @@ export const createDeck = () => {
 
 export const createPlayingDeck = (): PlayedCard[] => createDeck().map(x => ({ ...x, id: v4() }))
 
-export const canPlay = (current: Card, color: string, card: Card) => {
-	if (card.color instanceof Array) return card.color.includes(color);
+export const canPlay = (current: Omit<PlayedCard, "id">, card: Card) => {
+	if (card.color instanceof Array) return card.color.includes(current.colorOverride ?? current.color[0]);
 	if (card.color === "multicolor") return true;
-	if (color === card.color) return true;
+	if ((current.colorOverride ?? current.color) === card.color) return true;
 	if (current.type === card.type) return true;
 	return false;
+}
+
+export const canMatch = (bottom: Card, top: Card) => {
+	return bottom.type === top.type;
+}
+
+export const allMatch = (cards: Card[]) => {
+	return cards.slice(1).map((x, i) => [cards[i - 1], x]).every(x => canMatch(x[0], x[1]));
 }
