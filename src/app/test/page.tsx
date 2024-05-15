@@ -1,377 +1,39 @@
+"use client";
 import { Card } from "@/components/Card";
 import styles from "./test.module.css";
+import { useState } from "react";
 
 const num = 10;
 const angleRange = (Math.PI * 3) / 2;
 export default function Home() {
+	const [test, setTest] = useState(false);
 	return (
 		<main className={styles.test}>
 			<section>
-				<Card color="#25f3e2" symbol="Gabe" />
+				<Card color="multicolor" symbol="8" colorOverride="blue" />
+				<Card color="multicolor" symbol="12" colorOverride="green" />
+				<Card color="multicolor" symbol="+4" colorOverride="red" />
+				<Card color="multicolor" symbol="+2" colorOverride="yellow" />
+				<Card color="multicolor" symbol="reverse" colorOverride="purple" />
+				<Card color="multicolor" symbol="0" colorOverride="orange" />
+				<Card color="multicolor" symbol="+4"/>
+				<Card color="multicolor" symbol="6"  />
+				<Card color="multicolor" symbol="4" colorOverride={test ? undefined : "blue"} />
+				<button onClick={() => setTest(x => !x)}></button>
 			</section>
 			{["red", "blue", "yellow", "green", "orange", "purple",
 				"multicolor", "#ddd", "black", "goldenrod", "brown", "pink", "#333", "cyan", 'url("https://food.fnr.sndimg.com/content/dam/images/food/fullset/2023/6/28/fresh-corn-on-the-cob-partially-shucked-on-dark-background.jpg.rend.hgtvcom.1280.1280.suffix/1687987003387.jpeg")',
 				
 			].map(c => (
 				<section key={c}>
-					{([...Array(129)]
+					{([...Array(22)]
 						.map((x, i) => i) as (string | number)[])
-						.concat("+2", ..."ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz", "💀", "FR", "🇫🇷")
+						.concat("+2", /*..."ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz", "💀", "FR", "🇫🇷"*/)
 						.map((x) => (
 							<Card key={x.toString()} color={c} symbol={x.toString()} />
 						))}
 				</section>
 			))}
-			<section style={{ flexWrap: "wrap" }}>
-				{[...Array(7)]
-					.map((x, i) => (
-						<Card key={i} color={["red", "blue", "yellow", "green", "orange", "purple", "multicolor"][Math.floor(Math.random() * 7)]} symbol={[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16][Math.floor(Math.random() * 16)].toString()} />
-					))}
-				{[...Array(1111)]
-					.map((x, i) => (
-						<Card key={i} color={[
-							[
-								"purple",
-								"orange",
-								"green",
-								"yellow",
-								"blue",
-								"red"
-							],
-							[
-								"orange",
-								"green",
-								"yellow",
-								"blue",
-								"red"
-							],
-							[
-								"purple",
-								"green",
-								"yellow",
-								"blue",
-								"red"
-							],
-							[
-								"green",
-								"yellow",
-								"blue",
-								"red"
-							],
-							[
-								"purple",
-								"orange",
-								"yellow",
-								"blue",
-								"red"
-							],
-							[
-								"orange",
-								"yellow",
-								"blue",
-								"red"
-							],
-							[
-								"purple",
-								"yellow",
-								"blue",
-								"red"
-							],
-							[
-								"yellow",
-								"blue",
-								"red"
-							],
-							[
-								"purple",
-								"orange",
-								"green",
-								"blue",
-								"red"
-							],
-							[
-								"orange",
-								"green",
-								"blue",
-								"red"
-							],
-							[
-								"purple",
-								"green",
-								"blue",
-								"red"
-							],
-							[
-								"green",
-								"blue",
-								"red"
-							],
-							[
-								"purple",
-								"orange",
-								"blue",
-								"red"
-							],
-							[
-								"orange",
-								"blue",
-								"red"
-							],
-							[
-								"purple",
-								"blue",
-								"red"
-							],
-							[
-								"blue",
-								"red"
-							],
-							[
-								"purple",
-								"orange",
-								"green",
-								"yellow",
-								"red"
-							],
-							[
-								"orange",
-								"green",
-								"yellow",
-								"red"
-							],
-							[
-								"purple",
-								"green",
-								"yellow",
-								"red"
-							],
-							[
-								"green",
-								"yellow",
-								"red"
-							],
-							[
-								"purple",
-								"orange",
-								"yellow",
-								"red"
-							],
-							[
-								"orange",
-								"yellow",
-								"red"
-							],
-							[
-								"purple",
-								"yellow",
-								"red"
-							],
-							[
-								"yellow",
-								"red"
-							],
-							[
-								"purple",
-								"orange",
-								"green",
-								"red"
-							],
-							[
-								"orange",
-								"green",
-								"red"
-							],
-							[
-								"purple",
-								"green",
-								"red"
-							],
-							[
-								"green",
-								"red"
-							],
-							[
-								"purple",
-								"orange",
-								"red"
-							],
-							[
-								"orange",
-								"red"
-							],
-							[
-								"purple",
-								"red"
-							],
-							[
-								"red"
-							],
-							[
-								"purple",
-								"orange",
-								"green",
-								"yellow",
-								"blue"
-							],
-							[
-								"orange",
-								"green",
-								"yellow",
-								"blue"
-							],
-							[
-								"purple",
-								"green",
-								"yellow",
-								"blue"
-							],
-							[
-								"green",
-								"yellow",
-								"blue"
-							],
-							[
-								"purple",
-								"orange",
-								"yellow",
-								"blue"
-							],
-							[
-								"orange",
-								"yellow",
-								"blue"
-							],
-							[
-								"purple",
-								"yellow",
-								"blue"
-							],
-							[
-								"yellow",
-								"blue"
-							],
-							[
-								"purple",
-								"orange",
-								"green",
-								"blue"
-							],
-							[
-								"orange",
-								"green",
-								"blue"
-							],
-							[
-								"purple",
-								"green",
-								"blue"
-							],
-							[
-								"green",
-								"blue"
-							],
-							[
-								"purple",
-								"orange",
-								"blue"
-							],
-							[
-								"orange",
-								"blue"
-							],
-							[
-								"purple",
-								"blue"
-							],
-							[
-								"blue"
-							],
-							[
-								"purple",
-								"orange",
-								"green",
-								"yellow"
-							],
-							[
-								"orange",
-								"green",
-								"yellow"
-							],
-							[
-								"purple",
-								"green",
-								"yellow"
-							],
-							[
-								"green",
-								"yellow"
-							],
-							[
-								"purple",
-								"orange",
-								"yellow"
-							],
-							[
-								"orange",
-								"yellow"
-							],
-							[
-								"purple",
-								"yellow"
-							],
-							[
-								"yellow"
-							],
-							[
-								"purple",
-								"orange",
-								"green"
-							],
-							[
-								"orange",
-								"green"
-							],
-							[
-								"purple",
-								"green"
-							],
-							[
-								"green"
-							],
-							[
-								"purple",
-								"orange"
-							],
-							[
-								"orange"
-							],
-							[
-								"purple"
-							]
-						][Math.floor(Math.random() * 63)]} symbol={[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16][Math.floor(Math.random() * 16)].toString()} />
-					))}
-			</section>
-			<section style={{ flexWrap: "wrap" }}>
-				{[..."QWŴEËÉÈÊĚẼĒĖĘRŘTȚŤÞYŸŶÝUŲŮŰŪŨÜÚÙÛǓIĮİĪĨǏÏÍÌÎOŐŌÕØŒǑÖÔÓÒPAÆÃÅĀĂĄǍÄÂÁÀSẞŚŠŞȘDĎÐFGĞĠHĦJKĶLĽĻŁZŹŽŻXCÇĆČĊVBNŇŅŃÑMqwŵeëéèêěẽēėęrřtțťþyÿŷýuųůűūũüúùûǔiįıīĩǐïíìîoőōõøœǒöôóòpaæãåāăąǎäâáàsßşșśšdďðfgğġhħjkķlľļłzźžżxcçćčċvbnňņńñm1234567890°-–—•/\\:;()$₽¥€¢£₩&§@“«»„“”.…,?¿!¡’`‘’[]{}#%‰^*+=≈≠_\\|~<>€£¥•"].map((x, i) => (
-					<Card
-						key={x}
-						size="small"
-						color={`#${(
-							Math.floor(
-								Math.abs(
-									10000300 *
-									Math.cos(
-										x.charCodeAt(0) ** 2 * 17 + 121 + x.charCodeAt(0) * 40
-									)
-								)
-							) % 0x1000000
-						)
-							.toString(16)
-							.padStart(6, "0")}`}
-						symbol={x.toString()}
-					/>
-				))}
-			</section>
 		</main>
 	);
 }

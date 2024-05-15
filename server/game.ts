@@ -1,7 +1,7 @@
 import { Server } from "http"
 import { Socket } from "socket.io"
 import { TypedServer, TypedSocket } from "./types"
-import { Card, constants, createDeck, isNormalCard, isNormalColorCard } from "../common/cards/card";
+import { Card, constants, createDeck, createPlayingDeck, isNormalCard, isNormalColorCard, PlayedCard } from "../common/cards/card";
 import { shuffle } from "../common/util/util";
 import { PlayingRoom, Room, StartingRoom, roomManager } from "./room";
 import { players } from "./auth";
@@ -19,37 +19,38 @@ export interface ClientGameData {
 	currIndex: number;
 	order: 1 | -1;
 	playerHands: Record<string, number>;
-	currentCard: Card;
+	currentCard: PlayedCard;
 	currentColor: string;
-	discardSize: number;
+	lastDiscards: PlayedCard[];
+	hand: PlayedCard[];
 }
 
 export interface Game {
-	deck: Card[];
+	deck: PlayedCard[];
 	nextPlayer: string;
 	playerList: string[];
 	currIndex: number;
 	players: Record<
 		string,
 		{
-			cards: Card[];
+			cards: PlayedCard[];
 		}
 	>;
 	order: 1 | -1;
-	currentCard: Card;
+	currentCard: PlayedCard;
 	currentColor: string;
-	discard: Card[];
+	discard: PlayedCard[];
 }
 
 export const gameManager = {
 	resendGame(room: StartingRoom | PlayingRoom) {
 		for (const playerId of room.players) {
-			players[playerId].socket.emit("game:data", this.createClientData(room.game))
+			players[playerId].socket.emit("game:data", this.createClientData(room.game, playerId))
 		}
 	},
 	startGame(io: TypedServer, room: StartingRoom) {
 		const players = shuffle(room.players);
-		const deck = shuffle(createDeck());
+		const deck = shuffle(createPlayingDeck());
 		const startCardIndex = deck.findIndex(x => isNormalCard(x) && isNormalColorCard(x));
 		const [startCard] = deck.splice(startCardIndex === -1 ? 0 : startCardIndex, 1);
 		room.game = {
@@ -72,7 +73,7 @@ export const gameManager = {
 			roomManager.resendData(room.name);
 		}, 1000);
 	},
-	createClientData(game: Game): ClientGameData {
+	createClientData(game: Game, playerId: string): ClientGameData {
 		return {
 			deckSize: game.deck.length,
 			currentCard: game.currentCard,
@@ -81,7 +82,8 @@ export const gameManager = {
 			playerHands: Object.fromEntries(Object.entries(game.players).map(x => [x[0], x[1].cards.length])),
 			currentColor: game.currentColor,
 			playerList: game.playerList.map(x => players[x].name),
-			discardSize: game.discard.length
+			lastDiscards: game.discard.slice(-10),
+			hand: game.players[playerId].cards
 		}
 	}
 }

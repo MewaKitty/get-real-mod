@@ -1,16 +1,25 @@
 "use client";
-import { useEffect, useState } from "react";
-import styles from "./page.module.css";
-import { socket } from "../socket";
-import { Card as TCard } from "../../common/cards/card";
+import { v4 } from "uuid";
 import { Card } from "@/components/Card";
+import { useEffect, useState } from "react";
+import { ClientGameData } from "../../server/game";
+import { ClientRoomData } from "../../server/room";
+import { socket } from "../socket";
+import styles from "./page.module.css";
 
 export default function Home() {
-	const [temp, setTemp] = useState<TCard[]>([]);
+	const [room, setRoom] = useState<ClientRoomData | null>(null);
+	const [game, setGame] = useState<ClientGameData | null>(null);
 	useEffect(() => {
 		socket.onAny(console.log);
-		socket.emit("auth:id", crypto.randomUUID())
-		socket.emit("auth:name", crypto.randomUUID(), console.log)
+		socket.emit("auth:id", v4())
+		socket.emit("auth:name", v4(), console.log);
+		socket.on("room:data", x => {
+			setRoom(x);
+		});
+		socket.on("game:data", d => {
+			setGame(d)
+		})
 	}, []);
 
 	return (
@@ -22,8 +31,9 @@ export default function Home() {
 		<button onClick={() => socket.emit("room:start")}>start</button>
 		<button onClick={() => socket.emit("room:join", "test")}>join</button>
 		<section>
+			Room State: {room?.state}
 			{
-				temp.map(x => <Card symbol={x.type.toString()} color={x.color} key={`${x.type}${x.color}`} />)
+				game?.hand.map(x => <Card symbol={x.type.toString()} color={x.color} key={`${x.type}${x.color}`} />)
 			}
 		</section>
 		</main>

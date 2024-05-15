@@ -1,8 +1,14 @@
+import { v4 } from "uuid";
+
 export interface Card {
 	type: string | number;
 	color: string | string[];
-
 }
+export interface PlayedCard extends Card {
+	id: string;
+	colorOverride?: string;
+}
+
 export type CardType = number | `+${number}` | `×${number}` | "reverse" | "skip";
 
 export const isNormalCard = (card: Card) => constants.numbers.includes(card.type as number);
@@ -29,7 +35,7 @@ export const createDeck = () => {
 				deck.push({ type: number, color });
 		}
 		for (const special of constants.special) {
-			if (special.variety === "normal") for (let i = 0; i < special.count; i++) deck.push({ type: special.type, color });
+			if (special.variety === "normal" || special.variety === "both") for (let i = 0; i < special.count; i++) deck.push({ type: special.type, color });
 		}
 	}
 	for (const wild of constants.wilds) {
@@ -37,11 +43,13 @@ export const createDeck = () => {
 			deck.push({ type: number, color: wild });
 		}
 		for (const special of constants.special) {
-			if (special.variety === "wild") for (let i = 0; i < special.count; i++) deck.push({ type: special.type, color: wild });
+			if (special.variety === "wild" || special.variety === "both") for (let i = 0; i < special.count; i++) deck.push({ type: special.type, color: wild });
 		}
 	}
 	return deck;
 };
+
+export const createPlayingDeck = (): PlayedCard[] => createDeck().map(x => ({ ...x, id: v4() }))
 
 export const canPlay = (current: Card, color: string, card: Card) => {
 	if (card.color instanceof Array) return card.color.includes(color);

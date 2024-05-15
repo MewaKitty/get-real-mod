@@ -10,7 +10,7 @@ interface RoomCreateOptions {
 	name: string;
 	unlisted: boolean;
 }
-interface ClientRoomData {
+export interface ClientRoomData {
 	name: string
 	owner: string
 	players: string[]
@@ -94,6 +94,9 @@ export const roomManager = {
 		if (room === undefined) return;
 		for (const playerId of room.players) {
 			players[playerId].socket.emit("room:data", this.createClientData(room))
+		}
+		for (const player of Object.values(players)) {
+			roomManager.sendPublicRooms(player.socket);
 		}
 	},
 	createClientData(room: Room): ClientRoomData {

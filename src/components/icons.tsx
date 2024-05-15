@@ -62,7 +62,7 @@ export const icons = {
 		type: "both",
 		size: "57%",
 		element: (
-			<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 500" fill="currentColor">
+			<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" fill="currentColor">
 				<path d="M 0 100 L 0 200 L 400 200 L 400 300 L 600 150 L 400 0 L 400 100 L 0 100 Z" />
 				<path
 					d="M 0 350 L 0 450 L 400 450 L 400 550 L 600 400 L 400 250 L 400 350 L 0 350 Z"
