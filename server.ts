@@ -2,6 +2,10 @@ import { createServer } from "node:http";
 import next from "next";
 import { Server } from "socket.io";
 import { handleConnect } from "./backend";
+import { registerRoomEvents } from "./server/room";
+import { TypedServer, TypedSocket } from "./server/types";
+import { registerAuthEvents } from "./server/auth";
+import { registerGameEvents } from "./server/game";
 
 const dev = process.env.NODE_ENV !== "production";
 const hostname = "localhost";
@@ -10,15 +14,14 @@ const port = 3000;
 const app = next({ dev, hostname, port });
 const handler = app.getRequestHandler();
 
-
-
 app.prepare().then(() => {
 	const httpServer = createServer(handler);
 
-	const io = new Server(httpServer);
-	io.on("connection", socket => {
-		handleConnect(io, socket);
-	});
+	const io = new Server(httpServer, { connectionStateRecovery: {} }) as TypedServer;
+	registerAuthEvents(io, (socket: TypedSocket) => {
+		registerRoomEvents(io, socket);
+		registerGameEvents(io, socket);
+	})
 	httpServer
 		.once("error", err => {
 			console.error(err);

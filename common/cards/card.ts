@@ -5,6 +5,9 @@ export interface Card {
 }
 export type CardType = number | `+${number}` | `×${number}` | "reverse" | "skip";
 
+export const isNormalCard = (card: Card) => constants.numbers.includes(card.type as number);
+export const isNormalColorCard = (card: Card) => constants.colors.includes(card.color as string);
+
 export const constants = {
 	colors: ["red", "blue", "yellow", "green", "orange", "purple"],
 	wilds: ["multicolor"],
@@ -17,7 +20,7 @@ export const constants = {
 		{ type: "+8", variety: "wild", count: 2 },
 		{ type: "×2", variety: "wild", count: 4 },
 	]
-} as const;
+};
 export const createDeck = () => {
 	const deck: Card[] = [];
 	for (const color of constants.colors) {

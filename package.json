@@ -5,7 +5,7 @@
 	"private": true,
 	"scripts": {
 		"lint": "next lint",
-		"dev": "tsx server.ts",
+		"dev": "tsx watch server.ts",
 		"build": "next build",
 		"start": "NODE_ENV=production tsx server.ts"
 	},

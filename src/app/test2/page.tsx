@@ -1,4 +1,4 @@
-import { Card as TCard, createDeck } from "@/cards/card";
+import { Card as TCard, createDeck } from "../../../common/cards/card";
 import { BackCard, Card, DualCard } from "@/components/Card";
 import styles from "./test.module.css";
 

@@ -2,18 +2,15 @@
 import { useEffect, useState } from "react";
 import styles from "./page.module.css";
 import { socket } from "../socket";
-import { Card as TCard } from "@/cards/card";
+import { Card as TCard } from "../../common/cards/card";
 import { Card } from "@/components/Card";
 
 export default function Home() {
 	const [temp, setTemp] = useState<TCard[]>([]);
 	useEffect(() => {
 		socket.onAny(console.log);
-		socket.emit("init", "foo");
-		socket.emit("name", "foo");
-		socket.on("game:hand", hand => {
-			setTemp(hand)
-		})
+		socket.emit("auth:id", crypto.randomUUID())
+		socket.emit("auth:name", crypto.randomUUID(), console.log)
 	}, []);
 
 	return (
@@ -21,10 +18,9 @@ export default function Home() {
 		<button onClick={() => socket.emit("room:create", {
 			name: "test",
 			unlisted: false
-		})}>Create</button>
-		<button onClick={() => socket.emit("room:start", {
-			name: "test"
-		})}>Create</button>
+		}, console.log)}>Create</button>
+		<button onClick={() => socket.emit("room:start")}>start</button>
+		<button onClick={() => socket.emit("room:join", "test")}>join</button>
 		<section>
 			{
 				temp.map(x => <Card symbol={x.type.toString()} color={x.color} key={`${x.type}${x.color}`} />)
