@@ -5,9 +5,10 @@ import { useLocalStorage } from "@uidotdev/usehooks";
 
 export const getPlayerId = () => {
 	localStorage.playerId ??= v4();
-	return localStorage.playerId;
+	return localStorage.playerId as string;
 }
 
-export const usePlayerName = () => {
-	return useState(v4())//useLocalStorage("playerName", v4());
+export const getPlayerName = () => {
+	localStorage.playerName ??= v4();
+	return localStorage.playerName as string;
 }

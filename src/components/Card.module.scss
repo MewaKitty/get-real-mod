@@ -13,6 +13,9 @@
 	color: #ffffff;
 	letter-spacing: -3cqmin;
 	overflow: hidden;
+	transition: box-shadow 1s;
+	box-shadow: var(--color-override) 0px 0px 0px 50cqmin inset;
+	
 }
 
 .ring {
@@ -28,6 +31,8 @@
 	border-radius: 100%;
 	border: white 4.5cqmin solid;
 	pointer-events: none;
+	transition: box-shadow 1s;
+	box-shadow: var(--color-override) 0px 0px 0px 50cqmin inset
 }
 
 .smallTop,
@@ -109,14 +114,14 @@
 }
 .smallIcon {
 	position: absolute;
-	top: 0;
+	top: 4cqmin;
 	left: 3.2cqmin;
 	width: 25cqmin;
 	filter: drop-shadow(-1.4cqmin 1.4cqmin black);
 }
 .smallIcon[data-flipped] {
 	right: 3.2cqmin;
-	bottom: 0;
+	bottom: 4cqmin;
 	top: unset;
 	left: unset;
 	rotate: 180deg;
@@ -156,7 +161,7 @@
 .card[data-size="smallest"] {
 	.bigNumber {
 		font-size: 44cqmin;
-		translate: -2cqmin 0;
+		translate: 0 0;
 	}
 	.smallTop,
 	.smallBottom {

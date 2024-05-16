@@ -19,7 +19,7 @@ export default function Home() {
 				<Card color="multicolor" symbol="+4"/>
 				<Card color="multicolor" symbol="6"  />
 				<Card color="multicolor" symbol="4" colorOverride={test ? undefined : "blue"} />
-				<button onClick={() => setTest(x => !x)}></button>
+				<button onClick={() => setTest(x => !x)}>{test.toString()}</button>
 			</section>
 			{["red", "blue", "yellow", "green", "orange", "purple",
 				"multicolor", "#ddd", "black", "goldenrod", "brown", "pink", "#333", "cyan", 'url("https://food.fnr.sndimg.com/content/dam/images/food/fullset/2023/6/28/fresh-corn-on-the-cob-partially-shucked-on-dark-background.jpg.rend.hgtvcom.1280.1280.suffix/1687987003387.jpeg")',

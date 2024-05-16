@@ -1,6 +1,6 @@
-import { Server } from "http"
-import { Socket } from "socket.io"
-import type { EventCallback, TypedServer, TypedSocket } from "./types"
+import { Server } from "http";
+import { Socket } from "socket.io";
+import type { EventCallback, TypedServer, TypedSocket } from "./types";
 import { gameManager, type Game } from "./game";
 import { players } from "./auth";
 import { shuffle } from "../common/util/util";
@@ -11,36 +11,39 @@ interface RoomCreateOptions {
 	unlisted: boolean;
 }
 export interface ClientRoomData {
-	name: string
-	owner: string
-	players: string[]
-	lateJoins: boolean
-	state: Room["state"]
-	max: number
+	name: string;
+	owner: string;
+	players: string[];
+	lateJoins: boolean;
+	state: Room["state"];
+	max: number;
 }
 export interface RoomC2SEvents {
 	"room:create": (options: RoomCreateOptions, cb: EventCallback<boolean>) => void;
 	"room:join": (roomName: string) => void;
 	"room:start": () => void;
-
 }
 export interface RoomS2CEvents {
-	"room:list": (rooms: {
-		name: string;
-		owner: string;
-		playerCount: number;
-		lateJoins: boolean;
-		max: number;
-		state: Room["state"];
-	}[]) => void;
-	"room:data": (room: {
-		name: string;
-		owner: string;
-		players: string[];
-		lateJoins: boolean;
-		max: number;
-		state: Room["state"];
-	} | null) => void;
+	"room:list": (
+		rooms: {
+			name: string;
+			owner: string;
+			playerCount: number;
+			lateJoins: boolean;
+			max: number;
+			state: Room["state"];
+		}[]
+	) => void;
+	"room:data": (
+		room: {
+			name: string;
+			owner: string;
+			players: string[];
+			lateJoins: boolean;
+			max: number;
+			state: Room["state"];
+		} | null
+	) => void;
 }
 
 export interface BaseRoom {
@@ -72,7 +75,7 @@ export const roomManager = {
 	rooms: {} as Record<string, Room>,
 	_roomPlayerCache: {} as Record<string, Room>,
 	byPlayer(playerId: string) {
-		return this._roomPlayerCache[playerId]
+		return this._roomPlayerCache[playerId];
 	},
 	joinRoom(playerId: string, roomId: string) {
 		const room = this.rooms[roomId];
@@ -83,7 +86,7 @@ export const roomManager = {
 			this._roomPlayerCache[playerId] = room;
 			this.resendData(roomId);
 			if (room.state !== "lobby") {
-				room.game.players[playerId] = { cards: [...room.game.deck.splice(0, 10)] }
+				room.game.players[playerId] = { cards: [...room.game.deck.splice(0, 10)] };
 				room.game.playerList.push(playerId);
 				// TODO resendGame
 			}
@@ -93,11 +96,15 @@ export const roomManager = {
 		const room = this.rooms[name];
 		if (room === undefined) return;
 		for (const playerId of room.players) {
-			players[playerId].socket.emit("room:data", this.createClientData(room))
+			this.resendPlayerData(playerId, room);
 		}
 		for (const player of Object.values(players)) {
 			roomManager.sendPublicRooms(player.socket);
 		}
+	},
+	resendPlayerData(playerId: string, room: Room) {
+		players[playerId].socket.emit("room:data", this.createClientData(room));
+		if ("game" in room) players[playerId].socket.emit("game:data", gameManager.createClientData(room.game, playerId));
 	},
 	createClientData(room: Room): ClientRoomData {
 		return {
@@ -106,8 +113,8 @@ export const roomManager = {
 			players: room.players.map(x => players[x].name),
 			lateJoins: room.lateJoins,
 			state: room.state,
-			max: room.max
-		}
+			max: room.max,
+		};
 	},
 	createListData(room: Room) {
 		return {
@@ -116,14 +123,17 @@ export const roomManager = {
 			playerCount: room.players.length,
 			lateJoins: room.lateJoins,
 			state: room.state,
-			max: room.max
-		}
+			max: room.max,
+		};
 	},
 	getPublicRooms() {
-		return Object.values(this.rooms).filter(x => !x.unlisted)
+		return Object.values(this.rooms).filter(x => !x.unlisted);
 	},
 	sendPublicRooms(socket: TypedSocket) {
-		socket.emit("room:list", roomManager.getPublicRooms().map(x => roomManager.createListData(x)));
+		socket.emit(
+			"room:list",
+			roomManager.getPublicRooms().map(x => roomManager.createListData(x))
+		);
 	},
 	createRoom(owner: string, options: RoomCreateOptions) {
 		const room: Room = {
@@ -133,13 +143,13 @@ export const roomManager = {
 			max: 10,
 			name: options.name,
 			players: [owner],
-			unlisted: options.unlisted
-		}
+			unlisted: options.unlisted,
+		};
 		this._roomPlayerCache[owner] = room;
 		this.rooms[room.name] = room;
 		this.resendData(room.name);
-	}
-}
+	},
+};
 
 export const registerRoomEvents = (io: TypedServer, socket: TypedSocket) => {
 	roomManager.sendPublicRooms(socket);
@@ -160,4 +170,4 @@ export const registerRoomEvents = (io: TypedServer, socket: TypedSocket) => {
 		roomManager.resendData(room.name);
 		gameManager.startGame(io, room);
 	});
-}
+};

@@ -1,6 +1,7 @@
 import { Roboto } from "next/font/google";
 import styles from "./Card.module.scss";
 import { icons } from "./icons";
+import mix from "mix-css-color";
 
 const roboto = Roboto({ subsets: ["latin"], weight: ["400", "500", "900"] });
 
@@ -47,9 +48,8 @@ const aliases = {
 const cardBackgroundForColor = (color: string | string[], colorOverride: string | undefined) => {
 	const real = typeof color === "string" && color in aliases ? aliases[color as keyof typeof aliases] : color;
 	if (real instanceof Array && real.length > 1) {
-		return colorOverride ?? `linear-gradient(${real.join(", ")})`;
+		return `linear-gradient(${real.join(", ")})`;
 	}
-	if (colorOverride !== undefined) return colorOverride;
 	return typeof real === "string" ? real : real[0];
 };
 const ringBackgroundForColor = (color: string | string[], colorOverride: string | undefined) => {
@@ -57,7 +57,7 @@ const ringBackgroundForColor = (color: string | string[], colorOverride: string 
 	if (real instanceof Array && real.length > 1) {
 		return `conic-gradient(${real.flatMap((x, i, a) => [`${x} ${(360 / a.length) * i}deg`, `${x} ${(360 / a.length) * (i + 1)}deg`]).join(", ")})`;
 	}
-	return colorOverride ?? (typeof real === "string" ? real : real[0]);
+	return (typeof real === "string" ? real : real[0]);
 };
 
 interface CardOptions {
@@ -75,6 +75,7 @@ const CardRing = ({ color, colorOverride }: { color: string | string[]; colorOve
 		className={styles.ring}
 		style={{
 			background: ringBackgroundForColor(color, colorOverride),
+			"--color-override": colorOverride ? mix("transparent", colorOverride, 50).hexa : ""
 		}}
 	></div>
 }
@@ -88,9 +89,11 @@ export const Card = ({ color, symbol, flipped = false, size = sizeForSymbol(symb
 			<div
 				className={styles.card}
 				style={{
-					background: cardBackgroundForColor(color, colorOverride)
+					background: cardBackgroundForColor(color, colorOverride),
+					"--color-override": colorOverride ?? ""
 				}}
 				data-size={size}
+				data-foo={JSON.stringify(colorOverride)}
 			>
 				{sideElementForSymbol(symbol)}
 				{sideElementForSymbol(symbol, true)}

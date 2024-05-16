@@ -9,4 +9,5 @@
 
 .hand {
 	display: flex;
+	flex-wrap: wrap;
 }
