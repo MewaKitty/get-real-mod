@@ -13,17 +13,6 @@
 	color: #ffffff;
 	letter-spacing: -3cqmin;
 	overflow: hidden;
-	transition: --override-color-transparency 0.8s;
-	--override-color-transparency: 0%;
-	@supports not (color: color-mix((in srgb, red, white))) {
-		background: var(--backup-background) !important;
-	}
-}
-
-@property --override-color-transparency {
-	syntax: "<percentage>";
-	inherits: false;
-	initial-value: 0%;
 }
 
 .ring {
@@ -39,11 +28,6 @@
 	border-radius: 100%;
 	border: white 4.5cqmin solid;
 	pointer-events: none;
-	transition: --override-color-transparency 0.8s;
-	--override-color-transparency: 0%;
-	@supports not (color: color-mix((in srgb, red, white))) {
-		background: var(--backup-background) !important;
-	}
 }
 
 .smallTop,

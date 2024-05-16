@@ -1,3 +1,4 @@
+"use client";
 import { useState } from "react"
 import { v4 } from "uuid";
 import { useLocalStorage } from "@uidotdev/usehooks";

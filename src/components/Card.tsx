@@ -47,11 +47,7 @@ const aliases = {
 const cardBackgroundForColor = (color: string | string[], colorOverride: string | undefined) => {
 	const real = typeof color === "string" && color in aliases ? aliases[color as keyof typeof aliases] : color;
 	if (real instanceof Array && real.length > 1) {
-		return `${
-			colorOverride
-				? `linear-gradient(color-mix(in srgb, ${colorOverride} var(--override-color-transparency), transparent), color-mix(in srgb, ${colorOverride} var(--override-color-transparency), transparent)), `
-				: ""
-		}linear-gradient(${real.join(", ")})`;
+		return colorOverride ?? `linear-gradient(${real.join(", ")})`;
 	}
 	if (colorOverride !== undefined) return colorOverride;
 	return typeof real === "string" ? real : real[0];
@@ -59,11 +55,7 @@ const cardBackgroundForColor = (color: string | string[], colorOverride: string 
 const ringBackgroundForColor = (color: string | string[], colorOverride: string | undefined) => {
 	const real = typeof color === "string" && color in aliases ? aliases[color as keyof typeof aliases] : color;
 	if (real instanceof Array && real.length > 1) {
-		return `${
-			colorOverride
-				? `linear-gradient(color-mix(in srgb, ${colorOverride} var(--override-color-transparency), transparent), color-mix(in srgb, ${colorOverride} var(--override-color-transparency), transparent)), `
-				: ""
-		}conic-gradient(${real.flatMap((x, i, a) => [`${x} ${(360 / a.length) * i}deg`, `${x} ${(360 / a.length) * (i + 1)}deg`]).join(", ")})`;
+		return `conic-gradient(${real.flatMap((x, i, a) => [`${x} ${(360 / a.length) * i}deg`, `${x} ${(360 / a.length) * (i + 1)}deg`]).join(", ")})`;
 	}
 	return colorOverride ?? (typeof real === "string" ? real : real[0]);
 };
@@ -78,6 +70,15 @@ interface CardOptions {
 	colorOverride?: string;
 }
 
+const CardRing = ({ color, colorOverride }: { color: string | string[]; colorOverride: string | undefined }) => {
+	return <div
+		className={styles.ring}
+		style={{
+			background: ringBackgroundForColor(color, colorOverride),
+		}}
+	></div>
+}
+
 export const Card = ({ color, symbol, flipped = false, size = sizeForSymbol(symbol), height = "100px", pinned = false, colorOverride }: CardOptions) => {
 	return (
 		<article
@@ -86,19 +87,15 @@ export const Card = ({ color, symbol, flipped = false, size = sizeForSymbol(symb
 		>
 			<div
 				className={styles.card}
-				style={{ background: cardBackgroundForColor(color, colorOverride), "--override-color-transparency": colorOverride === undefined ? "0%" : "100%",
-					"--backup-background": cardBackgroundForColor(colorOverride ?? color, undefined)
-				 }}
+				style={{
+					background: cardBackgroundForColor(color, colorOverride)
+				}}
 				data-size={size}
 			>
 				{sideElementForSymbol(symbol)}
 				{sideElementForSymbol(symbol, true)}
 				{elementForSymbol(symbol)}
-				<div
-					className={styles.ring}
-					style={{ backgroundImage: ringBackgroundForColor(color, colorOverride), "--override-color-transparency": colorOverride === undefined ? "0%" : "44%",
-					"--backup-background": ringBackgroundForColor(color, undefined) }}
-				></div>
+				<CardRing color={color} colorOverride={colorOverride} />
 			</div>
 		</article>
 	);
