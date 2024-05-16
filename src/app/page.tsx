@@ -126,7 +126,9 @@ export default function Home() {
 				<section className={styles.hand}>
 					{game?.hand.map(x => (
 						<button
-							style={{ backgroundColor: selected.includes(x.id) ? "black" : "" }}
+							style={selected.includes(x.id) ? {
+								filter: "brightness(0.7) contrast(0.6)",
+							} : {}}
 							key={x.id}
 							onClick={() => {
 								if (name !== game?.playerList[game.currIndex] || !game.canPlay) return;
