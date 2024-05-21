@@ -203,21 +203,21 @@ export const registerGameEvents = (io: TypedServer, socket: TypedSocket) => {
 			if (!canPlay(game.currentCard, cards[0]!)) return;
 			if (game.pickup !== 0 && getPickupValue(cards[0]!) === null) return;
 			game.canPlay = false;
+			game.pickedUp = false;
 
 			gameManager.resendGame(game.room);
 
 			game.players[socket.data.playerId].cards = game.players[socket.data.playerId].cards.filter(x => !cardIds.includes(x.id));
+			const newDiscards = cards
+			.slice(0, -1) as PlayedCard[];
+			for (const [i, card] of newDiscards.entries()) {
+				const previous = i === 0 ? game.currentCard : newDiscards[i - 1];
+				if (card.color instanceof Array && typeof previous.color === "string")
+					card.colorOverride = previous.colorOverride ?? previous.color;
+			}
 			game.discard.push(
 				game.currentCard,
-				...(cards
-					.slice(0, -1)
-					.map((x, i, a) =>
-						x!.color instanceof Array
-							? i === 0
-								? { ...x, colorOverride: game.currentCard.colorOverride ?? game.currentCard.color }
-								: { ...x, colorOverride: a[i - 1]?.colorOverride ?? a[i - 1]?.color }
-							: x
-					) as PlayedCard[])
+				...newDiscards
 			);
 			game.currentCard = cards.at(-1)!;
 

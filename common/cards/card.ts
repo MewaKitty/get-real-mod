@@ -49,7 +49,7 @@ export const createDeck = () => {
 			if (special.variety === "wild" || special.variety === "both") for (let i = 0; i < special.count; i++) deck.push({ type: special.type, color: wild });
 		}
 	}
-	return [...Array(10)].fill(deck).flat();
+	return [...Array(40)].fill(deck).flat();
 };
 
 export const createPlayingDeck = (): PlayedCard[] => createDeck().map(x => ({ ...x, id: v4() }))
