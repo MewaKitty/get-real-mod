@@ -7,31 +7,12 @@ import { socket } from "../socket";
 import styles from "./page.module.css";
 import { getPlayerId, getPlayerName } from "./util/auth";
 import { canMatch, canPlay } from "../../common/cards/card";
+import { useGame, useRoom } from "./util/context";
 
 export default function Home() {
-	const [room, setRoom] = useState<ClientRoomData | null>(null);
-	const [game, setGame] = useState<ClientGameData | null>(null);
-	const [name, setName] = useState<string>("");
+	const room = useRoom();
+	const game = useGame();
 	const [selected, setSelected] = useState<string[]>([]);
-	useEffect(() => {
-		socket.onAny(console.log);
-		const id = getPlayerId();
-		setName(getPlayerName());
-		socket.emit("auth:id", id);
-		socket.emit("auth:name", name, console.log);
-		socket.on("room:data", x => {
-			setRoom(x);
-		});
-		socket.on("game:data", d => {
-			d.hand.sort((a, b) => {
-				const first = a.color instanceof Array ? b.color instanceof Array ? 0 : -1 : b.color instanceof Array ? 1 : a.color.localeCompare(b.color);
-				if (first !== 0) return first;
-				return typeof a.type === "number" ? typeof b.type === "number" ? a.type - b.type : 1 : typeof b.type === "number" ? -1 : a.type.localeCompare(b.type)
-			})
-
-			setGame(d);
-		});
-	}, [name]);
 
 	return (
 		<main className={styles.main}>
@@ -89,16 +70,16 @@ export default function Home() {
 						)}
 						<div style={{ height: "3rem" }}></div>
 					</div>
-					{name === game?.playerList[game.currIndex] && "ITS YOUR TURN!!"}
+					{game?.yourTurn && "ITS YOUR TURN!!"}
 					{game?.pickup ? `+${game.pickup}!!` : ""}
-					{game?.pickup && name === game?.playerList[game.currIndex] ? (
+					{game?.pickup && game?.yourTurn ? (
 						<button style={{ marginLeft: "auto" }} onClick={() => socket.emit("game:pickup")}>
 							Pickup
 						</button>
 					) : (
 						""
 					)}
-					{game?.configurationState !== null && name === game?.playerList[game.currIndex] ? (
+					{game?.configurationState !== null && game?.yourTurn ? (
 						game.configurationState === "color" ? (
 							<>
 								<h1>Choose Color: </h1>
@@ -131,7 +112,7 @@ export default function Home() {
 							} : {}}
 							key={x.id}
 							onClick={() => {
-								if (name !== game?.playerList[game.currIndex] || !game.canPlay) return;
+								if (!game.yourTurn || !game.canPlay) return;
 								if (selected.includes(x.id)) {
 									setSelected(
 										selected.slice(

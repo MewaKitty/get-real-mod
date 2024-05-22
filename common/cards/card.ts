@@ -49,7 +49,7 @@ export const createDeck = () => {
 			if (special.variety === "wild" || special.variety === "both") for (let i = 0; i < special.count; i++) deck.push({ type: special.type, color: wild });
 		}
 	}
-	return [...Array(40)].fill(deck).flat();
+	return [...Array(140)].fill(deck).flat();
 };
 
 export const createPlayingDeck = (): PlayedCard[] => createDeck().map(x => ({ ...x, id: v4() }))
@@ -109,4 +109,18 @@ export const getTotalPickupValue = (nextPlayerId: string, game: Game, cards: Car
 	let value = getInitialPickupValue(nextPlayerId, game, cards[0]);
 	if (value === null) return null;
 	return modifyPickupValue(value, cards.slice(1));
+}
+
+export const compareTypes = (first: string | number, second: string | number) => {
+	return typeof first === "number" ? typeof second === "number" ? first - second : 1 : typeof second === "number" ? -1 : first.localeCompare(second);
+}
+
+export const mapGroupBy = <T, K>(array: T[], mapper: (value: T) => K) => {
+	const map = new Map<K, T[]>();
+	for (const value of array) {
+		const k = mapper(value);
+		if (!map.has(k)) map.set(k, []);
+		map.get(k)!.push(value);
+	}
+	return map;
 }

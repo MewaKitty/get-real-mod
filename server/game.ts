@@ -47,6 +47,10 @@ export interface ClientGameData {
 	pickup: number;
 }
 
+export interface EnhancedClientGameData extends ClientGameData {
+	get yourTurn(): boolean;
+}
+
 export interface Game {
 	deck: PlayedCard[];
 	nextPlayer: string;
@@ -66,8 +70,8 @@ export interface Game {
 	pickedUp: boolean;
 	configurationState: null | {
 		type: "color";
-		playedCards: PlayedCard[],
-		card: PlayedCard
+		playedCards: PlayedCard[];
+		card: PlayedCard;
 	};
 	pickup: number;
 	takeDeck(count: number): PlayedCard[];
@@ -172,7 +176,7 @@ export const gameManager = {
 				game.pickup = pickup;
 			}
 		}
-	}
+	},
 };
 
 export const registerGameEvents = (io: TypedServer, socket: TypedSocket) => {
@@ -208,28 +212,23 @@ export const registerGameEvents = (io: TypedServer, socket: TypedSocket) => {
 			gameManager.resendGame(game.room);
 
 			game.players[socket.data.playerId].cards = game.players[socket.data.playerId].cards.filter(x => !cardIds.includes(x.id));
-			const newDiscards = cards
-			.slice(0, -1) as PlayedCard[];
+			const newDiscards = cards.slice(0, -1) as PlayedCard[];
 			for (const [i, card] of newDiscards.entries()) {
 				const previous = i === 0 ? game.currentCard : newDiscards[i - 1];
-				if (card.color instanceof Array && typeof previous.color === "string")
-					card.colorOverride = previous.colorOverride ?? previous.color;
+				if (card.color instanceof Array && typeof previous.color === "string") card.colorOverride = previous.colorOverride ?? previous.color;
 			}
-			game.discard.push(
-				game.currentCard,
-				...newDiscards
-			);
+			game.discard.push(game.currentCard, ...newDiscards);
 			game.currentCard = cards.at(-1)!;
 
 			if (!isNormalColorCard(game.currentCard)) {
 				game.configurationState = {
 					type: "color",
 					playedCards: cards as PlayedCard[],
-					card: game.currentCard
+					card: game.currentCard,
 				};
 				gameManager.resendGame(game.room);
 				return;
-			};
+			}
 		}
 
 		gameManager.nextPlayer(cards as PlayedCard[], game);
@@ -269,5 +268,5 @@ export const registerGameEvents = (io: TypedServer, socket: TypedSocket) => {
 			game.configurationState = null;
 			gameManager.resendGame(game.room);
 		}
-	})
+	});
 };
