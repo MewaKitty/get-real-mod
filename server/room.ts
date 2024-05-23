@@ -102,7 +102,11 @@ export const roomManager = {
 			roomManager.sendPublicRooms(player.socket);
 		}
 	},
-	resendPlayerData(playerId: string, room: Room) {
+	resendPlayerData(playerId: string, room: Room | undefined) {
+		if (room === undefined) {
+			players[playerId].socket.emit("room:data", null);
+			return;
+		}
 		players[playerId].socket.emit("room:data", this.createClientData(room));
 		if ("game" in room) players[playerId].socket.emit("game:data", gameManager.createClientData(room.game, playerId));
 	},

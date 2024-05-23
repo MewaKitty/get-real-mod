@@ -9,6 +9,5 @@ export const getPlayerId = () => {
 }
 
 export const getPlayerName = () => {
-	localStorage.playerName ??= v4();
-	return localStorage.playerName as string;
+	return localStorage.playerName as string || null;
 }

@@ -23,7 +23,7 @@ const handleConnect = (afterAuth: (socket: TypedSocket) => void) => (socket: Typ
 		if (!socket.data.playerId) return;
 		players[socket.data.playerId] = { name, socket };
 		const room = roomManager.byPlayer(socket.data.playerId);
-		if (room !== undefined) roomManager.resendPlayerData(socket.data.playerId, room);
+		roomManager.resendPlayerData(socket.data.playerId, room);
 	});
 	socket.once("auth:name", (name, cb) => {
 		if (!socket.data.playerId) return;
