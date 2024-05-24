@@ -7,7 +7,3 @@ export const getPlayerId = () => {
 	localStorage.playerId ??= v4();
 	return localStorage.playerId as string;
 }
-
-export const getPlayerName = () => {
-	return localStorage.playerName as string || null;
-}

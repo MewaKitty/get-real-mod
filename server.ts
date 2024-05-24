@@ -9,7 +9,7 @@ import parser from "socket.io-msgpack-parser";
 
 const dev = process.env.NODE_ENV !== "production";
 const hostname = "localhost";
-const port = 2222
+const port = 2223
 // when using middleware `hostname` and `port` must be provided below
 const app = next({ dev, hostname, port });
 const handler = app.getRequestHandler();

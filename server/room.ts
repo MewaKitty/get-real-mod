@@ -23,16 +23,17 @@ export interface RoomC2SEvents {
 	"room:join": (roomName: string) => void;
 	"room:start": () => void;
 }
+export interface RoomListData {
+	name: string;
+	owner: string;
+	playerCount: number;
+	lateJoins: boolean;
+	max: number;
+	state: Room["state"];
+}
 export interface RoomS2CEvents {
 	"room:list": (
-		rooms: {
-			name: string;
-			owner: string;
-			playerCount: number;
-			lateJoins: boolean;
-			max: number;
-			state: Room["state"];
-		}[]
+		rooms: RoomListData[]
 	) => void;
 	"room:data": (
 		room: {

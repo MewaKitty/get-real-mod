@@ -1,17 +1,18 @@
 "use client";
-import { getPlayerId, getPlayerName } from "@/app/util/auth";
-import { AuthContext, GameContext, RoomContext } from "@/app/util/context";
+import { getPlayerId } from "@/app/util/auth";
+import { AuthContext, GameContext, RoomContext, RoomListContext } from "@/app/util/context";
 import { socket } from "@/socket";
 import { useEffect, useMemo, useState } from "react";
+import { useLocalStorage } from "usehooks-ts";
 import { compareTypes, mapGroupBy } from "../../common/cards/card";
 import { EnhancedClientGameData } from "../../server/game";
-import { ClientRoomData } from "../../server/room";
-import { useLocalStorage } from "@uidotdev/usehooks";
+import { ClientRoomData, RoomListData } from "../../server/room";
 
 export const GameHandler = ({ children }: { children: React.ReactNode }) => {
 	const [room, setRoom] = useState<ClientRoomData | null>(null);
 	const [game, setGame] = useState<EnhancedClientGameData | null>(null);
-	const [name, setName] = useLocalStorage<string | null>("playerName", null)
+	const [name, setName] = useLocalStorage<string | null>("playerName", null);
+	const [roomList, setRoomList] = useState<RoomListData[] | undefined>();
 	const authData = useMemo(() => ({ name, setName }), [name, setName]);
 	useEffect(() => {
 		if (name !== null) socket.emit("auth:name", name, console.log);
@@ -19,10 +20,12 @@ export const GameHandler = ({ children }: { children: React.ReactNode }) => {
 	useEffect(() => {
 		socket.onAny(console.log);
 		const id = getPlayerId();
-		setName(getPlayerName());
 		socket.emit("auth:id", id);
 		socket.on("room:data", x => {
 			setRoom(x);
+		});
+		socket.on("room:list", x => {
+			setRoomList(x);
 		});
 		socket.on("game:data", d => {
 			d.hand.sort((a, b) => {
@@ -32,8 +35,8 @@ export const GameHandler = ({ children }: { children: React.ReactNode }) => {
 							? a.color.join("").localeCompare(b.color.join(""))
 							: -1
 						: b.color instanceof Array
-						? 1
-						: a.color.localeCompare(b.color);
+							? 1
+							: a.color.localeCompare(b.color);
 				if (first !== 0) return first;
 				return compareTypes(a.type, b.type);
 			});
@@ -54,7 +57,11 @@ export const GameHandler = ({ children }: { children: React.ReactNode }) => {
 	return (
 		<RoomContext.Provider value={room}>
 			<GameContext.Provider value={game}>
-				<AuthContext.Provider value={authData}>{children}</AuthContext.Provider>
+				<AuthContext.Provider value={authData}>
+					<RoomListContext.Provider value={roomList}>
+						{children}
+					</RoomListContext.Provider>
+				</AuthContext.Provider>
 			</GameContext.Provider>
 		</RoomContext.Provider>
 	);

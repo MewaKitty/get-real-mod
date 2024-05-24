@@ -10,17 +10,18 @@
 		"start": "NODE_ENV=production tsx server.ts"
 	},
 	"dependencies": {
-		"@uidotdev/usehooks": "^2.4.1",
 		"mix-css-color": "^0.2.0",
 		"next": "14.2.3",
 		"radash": "^12.1.0",
 		"react": "^18",
 		"react-dom": "^18",
+		"react-loading-skeleton": "^3.4.0",
 		"sass": "^1.77.1",
 		"socket.io": "^4.7.5",
 		"socket.io-client": "^4.7.5",
 		"socket.io-msgpack-parser": "^3.0.2",
 		"tsx": "^4.10.2",
+		"usehooks-ts": "^3.1.0",
 		"uuid": "^9.0.1"
 	},
 	"devDependencies": {

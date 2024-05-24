@@ -71,7 +71,6 @@ interface CardOptions {
 }
 
 const CardRing = ({ color, colorOverride }: { color: string | string[]; colorOverride: string | undefined }) => {
-	console.log(`mixing `, color, colorOverride, mix("transparent", colorOverride ?? "", 50))
 	return <div
 		className={styles.ring}
 		style={{
@@ -82,7 +81,6 @@ const CardRing = ({ color, colorOverride }: { color: string | string[]; colorOve
 }
 
 export const Card = ({ color, symbol, flipped = false, size = sizeForSymbol(symbol), height = "100px", pinned = false, colorOverride }: CardOptions) => {
-	console.log(`rendering `, color, symbol, colorOverride, color)
 	return (
 		<article
 			className={`${roboto.className} ${styles.cardWrapper}`}

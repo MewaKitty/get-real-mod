@@ -1,12 +1,9 @@
 "use client";
 import { BackCard, Card } from "@/components/Card";
-import { useEffect, useState } from "react";
-import { ClientGameData } from "../../server/game";
-import { ClientRoomData } from "../../server/room";
+import { useState } from "react";
+import { canMatch, canPlay } from "../../common/cards/card";
 import { socket } from "../socket";
 import styles from "./page.module.css";
-import { getPlayerId, getPlayerName } from "./util/auth";
-import { canMatch, canPlay } from "../../common/cards/card";
 import { useGame, useRoom } from "./util/context";
 
 export default function Home() {
