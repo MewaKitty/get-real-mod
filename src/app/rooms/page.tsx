@@ -18,7 +18,7 @@ export default function RoomPage() {
 		<section>
 			{
 				roomList === undefined ? skeletons : roomList.filter(x => x.lateJoins ? x.state !== "end" : x.state === "lobby").map(x =>
-					<RoomListItem room={x} />
+					<RoomListItem room={x} key={x.name} />
 				)
 			}
 		</section>

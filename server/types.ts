@@ -14,4 +14,5 @@ type S2CEvents = RoomS2CEvents & AuthS2CEvents & GameS2CEvents;
 type SocketData = {
     playerName: string;
     playerId: string;
+    authed: true | undefined;
 };

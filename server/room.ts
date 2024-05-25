@@ -76,7 +76,7 @@ export const roomManager = {
 	rooms: {} as Record<string, Room>,
 	_roomPlayerCache: {} as Record<string, Room>,
 	byPlayer(playerId: string) {
-		return this._roomPlayerCache[playerId];
+		return this._roomPlayerCache[playerId] as Room | undefined;
 	},
 	joinRoom(playerId: string, roomId: string) {
 		const room = this.rooms[roomId];
@@ -160,9 +160,10 @@ export const registerRoomEvents = (io: TypedServer, socket: TypedSocket) => {
 	roomManager.sendPublicRooms(socket);
 	socket.on("room:create", (args, cb) => {
 		if (args.name in roomManager.rooms) return cb(false);
+		console.log("got here", args)
 		roomManager.createRoom(socket.data.playerId, args);
 		cb(true);
-	});
+	}); 
 	socket.on("room:join", room => {
 		roomManager.joinRoom(socket.data.playerId, room);
 	});
