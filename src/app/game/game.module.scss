@@ -1,0 +1,63 @@
+.main {
+	overflow: hidden;
+	perspective: 600px;
+}
+.table {
+	width: 100%;
+	height: 100%;
+	display: grid;
+	grid-template: 1fr 1fr 1fr / 1fr 1fr;
+	* {
+		transform-style: preserve-3d;
+	}
+	transform-style: preserve-3d;
+	translate: 0 0 -400px;
+	transform: rotateX(15deg);
+	transform-origin: top;
+	animation: foo linear infinite 4s;
+}
+.table::before {
+	content: "";
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	--s: 100px;
+	--c1: #713c19;
+	--c2: #846615;
+
+	--_g1: var(--c1) calc(25% / 3), #0000 0 calc(50% / 3), var(--c1) 0 25%, #0000 0 75%, var(--c1) 0 calc(250% / 3), #0000 0 calc(275% / 3), var(--c1) 0;
+	--_g2: #0000 calc(25% / 3), var(--c1) 0 calc(50% / 3), #0000 0 calc(250% / 3), var(--c1) 0 calc(275% / 3), #0000 0;
+	background: linear-gradient(45deg, var(--_g2)), linear-gradient(45deg, var(--_g1)), linear-gradient(-45deg, var(--_g2)), linear-gradient(-45deg, var(--_g1)) var(--c2); /* second color */
+	background-position: 0 0, var(--s) var(--s);
+	background-size: calc(2 * var(--s)) calc(2 * var(--s));
+}
+.deck {
+	margin: auto;
+	position: relative;
+	transform: translateZ(1px);
+	user-select: none;
+	.deckCard {
+		position: absolute;
+		top: 0;
+		left: 0;
+		transform: translate3d(calc(sin(tan(var(--deck-index) * 42)) * 0.3em), calc(sin(tan(var(--deck-index) * 4)) * 0.2em), calc(var(--deck-index) * 0.1em));
+		> article {
+			transition: filter 0.1s;
+			cursor: pointer;
+		}
+	}
+	&[data-turn] {
+		&:hover {
+			.deckCard > article {
+				filter: brightness(0.9) contrast(0.7);
+			}
+		}
+		&:active {
+			.deckCard > article {
+				filter: brightness(0.7) contrast(0.6);
+			}
+		}
+	}
+}

@@ -9,8 +9,8 @@ import { EnhancedClientGameData } from "../../server/game";
 import { ClientRoomData, RoomListData } from "../../server/room";
 
 export const GameHandler = ({ children }: { children: React.ReactNode }) => {
-	const [room, setRoom] = useState<ClientRoomData | null>(null);
-	const [game, setGame] = useState<EnhancedClientGameData | null>(null);
+	const [room, setRoom] = useState<ClientRoomData | null | undefined>(undefined);
+	const [game, setGame] = useState<EnhancedClientGameData | null | undefined>(undefined);
 	const [name, setName] = useLocalStorage<string | null>("playerName", null);
 	const [roomList, setRoomList] = useState<RoomListData[] | undefined>();
 	const authData = useMemo(() => ({ name, setName }), [name, setName]);

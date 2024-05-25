@@ -160,7 +160,6 @@ export const registerRoomEvents = (io: TypedServer, socket: TypedSocket) => {
 	roomManager.sendPublicRooms(socket);
 	socket.on("room:create", (args, cb) => {
 		if (args.name in roomManager.rooms) return cb(false);
-		console.log("got here", args)
 		roomManager.createRoom(socket.data.playerId, args);
 		cb(true);
 	}); 

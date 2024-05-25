@@ -117,6 +117,17 @@ export const BackCard = ({ height = "100px", flipped = false, pinned = false }: 
 		</article>
 	);
 };
+export const EmptyCard = ({ height = "100px" }: { height?: string; }) => {
+	return (
+		<article
+			className={`${roboto.className} ${styles.cardWrapper}`}
+			style={{ height }}
+		>
+		<div className={styles.card} style={{ backgroundColor: "white" }} data-size="normal">
+		</div>
+		</article>
+	);
+};
 
 export const DualCard = ({ height = "100px", flipped = false, color, symbol, size = sizeForSymbol(symbol) }: Omit<CardOptions, "pinned">) => {
 	return (
