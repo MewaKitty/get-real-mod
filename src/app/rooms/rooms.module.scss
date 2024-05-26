@@ -1,0 +1,29 @@
+.roomList {
+	display: flex;
+	flex-wrap: wrap;
+	width: 100%;	
+	padding: 0.5em;
+	gap: 0.5em;
+}
+
+.room {
+	display: flex;
+	flex-direction: column;
+	gap: 0.25em;
+	background-color: #00000022;
+	padding: 0.5em 0.6em;
+	border-radius: 5px;
+	button {
+		background-color: #00000033;
+		padding: 0.5em 0.6em;
+		border-radius: 5px;
+		font-weight: bold;
+		transition: background-color 0.2s;
+		&:hover {
+			background-color: #00000044;
+		}
+		&:active {
+			background-color: #00000066;
+		}
+	}
+}

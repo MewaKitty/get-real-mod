@@ -25,11 +25,14 @@ export interface GameC2SEvents {
 	"game:play": (cards: string[]) => void;
 	"game:configure": (options: { type: "color"; color: number }) => void;
 	"game:pickup": () => void;
+	"game:call": () => void;
 }
 export interface GameS2CEvents {
 	"game:data": (data: ClientGameData) => void;
 	"game:effect": (effect: "skip" | "reverse") => void;
 	"game:pickup": (count: number) => void;
+	"game:call": (from: string) => void;
+	"game:win": () => void;
 }
 
 export interface ClientGameData {
@@ -45,6 +48,8 @@ export interface ClientGameData {
 	pickedUp: boolean;
 	configurationState: null | "color";
 	pickup: number;
+	lastPlayer: string;
+	winners: { name: string; extra?: string }[];
 }
 
 export interface EnhancedClientGameData extends ClientGameData {
@@ -60,6 +65,7 @@ export interface Game {
 		string,
 		{
 			cards: PlayedCard[];
+			called: boolean;
 		}
 	>;
 	order: 1 | -1;
@@ -74,6 +80,8 @@ export interface Game {
 		card: PlayedCard;
 	};
 	pickup: number;
+	lastPlayer: string;
+	winners: { id: string; extra?: string }[];
 	takeDeck(count: number): PlayedCard[];
 	takeCard(): PlayedCard | null;
 }
@@ -93,9 +101,9 @@ export const gameManager = {
 		room.game = {
 			currIndex: 0,
 			deck,
-			nextPlayer: players[1],
+			nextPlayer: players[1] ?? players[0],
 			playerList: players,
-			players: Object.fromEntries(players.map(x => [x, { cards: [] }])),
+			players: Object.fromEntries(players.map(x => [x, { cards: [], called: false }])),
 			order: 1,
 			currentCard: startCard,
 			discard: [],
@@ -104,6 +112,8 @@ export const gameManager = {
 			pickedUp: false,
 			configurationState: null,
 			pickup: 0,
+			lastPlayer: "",
+			winners: [],
 			takeDeck(count: number) {
 				const took = this.deck.splice(0, count);
 				if (took.length < count) {
@@ -137,12 +147,14 @@ export const gameManager = {
 			order: game.order,
 			playerHands: Object.fromEntries(Object.entries(game.players).map(x => [players[x[0]].name, x[1].cards.length])),
 			playerList: game.playerList.map(x => players[x].name),
-			lastDiscards: game.discard.slice(-10),
+			lastDiscards: game.discard.slice(-15),
 			hand: game.players[playerId].cards,
 			canPlay: game.canPlay,
 			pickedUp: game.pickedUp,
 			configurationState: game.configurationState?.type ?? null,
 			pickup: game.pickup,
+			lastPlayer: players[game.lastPlayer]?.name,
+			winners: game.winners.map(x => ({ name: players[x.id].name, extra: x.extra })),
 		};
 	},
 	byPlayer(playerId: string) {
@@ -151,8 +163,15 @@ export const gameManager = {
 		return room.game;
 	},
 	nextPlayer(cards: PlayedCard[], game: Game) {
-		game.currIndex = game.playerList.indexOf(game.nextPlayer);
-		game.nextPlayer = game.playerList[(game.currIndex + game.order + game.playerList.length) % game.playerList.length];
+		game.lastPlayer = game.playerList[game.currIndex];
+		if (game.players[game.playerList[game.currIndex]].cards.length === 0) {
+			game.winners.push({ id: game.playerList[game.currIndex] });
+			players[game.playerList[game.currIndex]].socket.emit("game:win");
+			game.playerList.splice(game.currIndex, 1);
+		} else {
+			game.currIndex = game.playerList.indexOf(game.nextPlayer);
+			game.nextPlayer = game.playerList[(game.currIndex + game.order + game.playerList.length) % game.playerList.length];
+		}
 
 		game.canPlay = true;
 
@@ -176,10 +195,34 @@ export const gameManager = {
 				game.pickup = pickup;
 			}
 		}
+		if (game.playerList.length === 0 || (game.playerList.length === 1 && game.winners.length > 0)) {
+			if (game.playerList.length > 0 && game.pickup !== 0) {
+				for (const card of game.takeDeck(game.pickup)) game.players[game.playerList[0]].cards.push(card);
+				players[game.playerList[game.currIndex]].socket.emit("game:pickup", game.pickup);
+				game.pickup = 0;
+			}
+			(game.room.state as string) = "end";
+			const id = game.playerList.pop()!;
+			game.winners.push({ id, extra: `${game.players[id].cards.length} cards left` });
+			roomManager.resendData(game.room.name);
+		}
 	},
 };
 
 export const registerGameEvents = (io: TypedServer, socket: TypedSocket) => {
+	socket.on("game:call", () => {
+		const game = gameManager.byPlayer(socket.data.playerId);
+		if (game === null) return;
+		for (const player of game.playerList) players[player].socket.emit("game:call", players[socket.data.playerId].name);
+		game.players[socket.data.playerId].called = true;
+		for (const [id, data] of Object.entries(game.players)) {
+			if (data.cards.length === 1 && !data.called) {
+				for (const card of game.takeDeck(2)) data.cards.push(card);
+				gameManager.resendGame(game.room);
+				players[id].socket.emit("game:pickup", 2);
+			}
+		}
+	});
 	socket.on("game:play", cardIds => {
 		const game = gameManager.byPlayer(socket.data.playerId);
 		if (game === null) return;
@@ -212,6 +255,7 @@ export const registerGameEvents = (io: TypedServer, socket: TypedSocket) => {
 			gameManager.resendGame(game.room);
 
 			game.players[socket.data.playerId].cards = game.players[socket.data.playerId].cards.filter(x => !cardIds.includes(x.id));
+			if (game.players[socket.data.playerId].cards.length !== 1) game.players[game.playerList[game.currIndex]].called = false;
 			const newDiscards = cards.slice(0, -1) as PlayedCard[];
 			for (const [i, card] of newDiscards.entries()) {
 				const previous = i === 0 ? game.currentCard : newDiscards[i - 1];

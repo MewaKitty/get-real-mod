@@ -46,12 +46,12 @@ export const GameHandler = ({ children }: { children: React.ReactNode }) => {
 				.filter(x => x[1] > 1)
 				.map(x => x[0]);
 			d.hand.sort((a, b) => (count.includes(a.type) ? (count.includes(b.type) ? count.indexOf(a.type) - count.indexOf(b.type) : -1) : count.includes(b.type) ? 1 : 0));
-			setGame({
+			setGame(() => ({
 				...d,
 				get yourTurn() {
-					return name === game?.playerList[game.currIndex];
+					return name === this.playerList[this.currIndex];
 				},
-			});
+			}));
 		});
 	}, [game, name]);
 	return (

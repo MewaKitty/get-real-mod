@@ -1,10 +1,7 @@
-import { Server } from "http";
-import { Socket } from "socket.io";
-import type { EventCallback, TypedServer, TypedSocket } from "./types";
-import { gameManager, type Game } from "./game";
-import { players } from "./auth";
 import { shuffle } from "../common/util/util";
-import { createDeck } from "../common/cards/card";
+import { players } from "./auth";
+import { gameManager, type Game } from "./game";
+import type { EventCallback, TypedServer, TypedSocket } from "./types";
 
 interface RoomCreateOptions {
 	name: string;
@@ -22,6 +19,7 @@ export interface RoomC2SEvents {
 	"room:create": (options: RoomCreateOptions, cb: EventCallback<boolean>) => void;
 	"room:join": (roomName: string) => void;
 	"room:start": () => void;
+	"room:leave": () => void;
 }
 export interface RoomListData {
 	name: string;
@@ -32,9 +30,7 @@ export interface RoomListData {
 	state: Room["state"];
 }
 export interface RoomS2CEvents {
-	"room:list": (
-		rooms: RoomListData[]
-	) => void;
+	"room:list": (rooms: RoomListData[]) => void;
 	"room:data": (
 		room: {
 			name: string;
@@ -154,6 +150,15 @@ export const roomManager = {
 		this.rooms[room.name] = room;
 		this.resendData(room.name);
 	},
+	deleteRoom(name: string) {
+		const room = this.rooms[name];
+		if (room === undefined) return;
+		delete this.rooms[name];
+		for (const player of room.players) {
+			delete this._roomPlayerCache[player];
+			this.resendPlayerData(player, undefined);
+		}
+	},
 };
 
 export const registerRoomEvents = (io: TypedServer, socket: TypedSocket) => {
@@ -162,7 +167,7 @@ export const registerRoomEvents = (io: TypedServer, socket: TypedSocket) => {
 		if (args.name in roomManager.rooms) return cb(false);
 		roomManager.createRoom(socket.data.playerId, args);
 		cb(true);
-	}); 
+	});
 	socket.on("room:join", room => {
 		roomManager.joinRoom(socket.data.playerId, room);
 	});
@@ -174,5 +179,52 @@ export const registerRoomEvents = (io: TypedServer, socket: TypedSocket) => {
 		room.state = "starting";
 		roomManager.resendData(room.name);
 		gameManager.startGame(io, room);
+	});
+	socket.on("room:leave", () => {
+		const room = roomManager.byPlayer(socket.data.playerId);
+		if (room === undefined) return;
+		room.players = room.players.filter(x => x !== socket.data.playerId);
+		if (room.players.length === 0) {
+			delete roomManager._roomPlayerCache[socket.data.playerId];
+			roomManager.deleteRoom(room.name);
+			roomManager.resendPlayerData(socket.data.playerId, undefined);
+			for (const player of Object.values(players)) {
+				roomManager.sendPublicRooms(player.socket);
+			}
+			return;
+		}
+		switch (room.state) {
+			case "lobby":
+				break;
+			case "starting":
+			case "play":
+			case "end": {
+				const game = room.game;
+				if (game.playerList[game.currIndex] === socket.data.playerId) {
+					game.playerList = game.playerList.filter(x => x !== socket.data.playerId);
+					game.configurationState = null;
+					game.canPlay = true;
+					game.currIndex = game.playerList.indexOf(game.nextPlayer);
+					game.pickedUp = false;
+					game.nextPlayer = game.playerList[(game.currIndex + game.order + game.playerList.length) % game.playerList.length];
+				} else if (game.nextPlayer === socket.data.playerId) {
+					const currentPlayer = game.playerList[game.currIndex];
+					game.playerList = game.playerList.filter(x => x !== socket.data.playerId);
+					game.currIndex = game.playerList.indexOf(currentPlayer);
+					game.nextPlayer = game.playerList[(game.currIndex + game.order + game.playerList.length) % game.playerList.length];
+				} else {
+					game.playerList = game.playerList.filter(x => x !== socket.data.playerId);
+				}
+				game.deck.push(...game.players[socket.data.playerId].cards);
+				game.deck = shuffle(game.deck);
+				delete game.players[socket.data.playerId];
+				gameManager.resendGame(room as StartingRoom | PlayingRoom);
+			}
+		}
+		room.players = room.players.filter(x => x !== socket.data.playerId);
+		if (room.owner === socket.data.playerId) room.owner = room.players[Math.floor(Math.random() * room.players.length)];
+		delete roomManager._roomPlayerCache[socket.data.playerId];
+		roomManager.resendData(room.name);
+		roomManager.resendPlayerData(socket.data.playerId, undefined);
 	});
 };
