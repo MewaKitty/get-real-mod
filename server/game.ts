@@ -164,14 +164,6 @@ export const gameManager = {
 	},
 	nextPlayer(cards: PlayedCard[], game: Game) {
 		game.lastPlayer = game.playerList[game.currIndex];
-		if (game.players[game.playerList[game.currIndex]].cards.length === 0) {
-			game.winners.push({ id: game.playerList[game.currIndex] });
-			players[game.playerList[game.currIndex]].socket.emit("game:win");
-			game.playerList.splice(game.currIndex, 1);
-		} else {
-			game.currIndex = game.playerList.indexOf(game.nextPlayer);
-			game.nextPlayer = game.playerList[(game.currIndex + game.order + game.playerList.length) % game.playerList.length];
-		}
 
 		game.canPlay = true;
 
@@ -190,11 +182,22 @@ export const gameManager = {
 		if (game.pickup !== 0) {
 			game.pickup = modifyPickupValue(game.pickup, cards as Card[]) ?? game.pickup;
 		} else {
-			const pickup = getTotalPickupValue(game.playerList[game.currIndex], game, cards as Card[]);
+			const pickup = getTotalPickupValue(game.nextPlayer, game, cards as Card[]);
 			if (pickup !== null) {
 				game.pickup = pickup;
 			}
 		}
+		game.currIndex = game.playerList.indexOf(game.nextPlayer);
+		game.nextPlayer = game.playerList[(game.currIndex + game.order + game.playerList.length) % game.playerList.length];
+		
+		if (game.players[game.lastPlayer].cards.length === 0) {
+			const currentPlayer = game.playerList[game.currIndex];
+			game.winners.push({ id: game.lastPlayer });
+			players[game.lastPlayer].socket.emit("game:win");
+			game.playerList.splice(game.playerList.indexOf(game.lastPlayer), 1);
+			game.currIndex = game.playerList.indexOf(currentPlayer);
+		}
+
 		if (game.playerList.length === 0 || (game.playerList.length === 1 && game.winners.length > 0)) {
 			if (game.playerList.length > 0 && game.pickup !== 0) {
 				for (const card of game.takeDeck(game.pickup)) game.players[game.playerList[0]].cards.push(card);
