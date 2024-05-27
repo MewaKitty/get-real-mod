@@ -79,13 +79,14 @@ export const roomManager = {
 		if (room === undefined || room.players.includes(playerId) || this.byPlayer(playerId) !== undefined) return;
 		if (room.state === "end") return;
 		if (room.state === "lobby" || room.lateJoins) {
+			if (room.state !== "lobby" && room.game.deck.length < 10) return;
 			room.players.push(playerId);
 			this._roomPlayerCache[playerId] = room;
 			this.resendData(roomId);
 			if (room.state !== "lobby") {
-				room.game.players[playerId] = { cards: [...room.game.deck.splice(0, 10)] };
+				room.game.players[playerId] = { cards: [...room.game.deck.splice(0, 10)], called: false };
 				room.game.playerList.push(playerId);
-				// TODO resendGame
+				gameManager.resendGame(room);
 			}
 		}
 	},
