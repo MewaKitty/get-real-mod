@@ -190,7 +190,7 @@ export const gameManager = {
 		if (game.pickup !== 0) {
 			game.pickup = modifyPickupValue(game.pickup, cards as Card[]) ?? game.pickup;
 		} else {
-			const pickup = getTotalPickupValue(game.nextPlayer, game, cards as Card[]);
+			const pickup = getTotalPickupValue(game.playerList[game.currIndex], game, cards as Card[]);
 			if (pickup !== null) {
 				game.pickup = pickup;
 			}
