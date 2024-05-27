@@ -14,7 +14,7 @@ export default function RoomsPage() {
 	const [name, setName] = useState("");
 	useEffect(() => {
 		if (auth.name === null) router.replace("/setup");
-		else if (room !== null) router.replace("/room");
+		else if (room !== null && room !== undefined) router.replace("/room");
 	}, [room, router, auth]);
 	const skeletons = [...Array(5)].map((_, i) => <RoomListItem room={null} key={i} canJoin={false} />)
 	return <main className={styles.main}>
