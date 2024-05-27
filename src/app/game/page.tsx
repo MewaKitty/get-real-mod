@@ -114,7 +114,7 @@ export default function GamePage() {
 		}
 	};
 	const onClickPass = () => {
-		if (room.state === "play" && game.yourTurn && game.canPlay && game.pickedUp) socket.emit("game:play", []);
+		if (room.state === "play" && game.yourTurn && game.canPlay && (game.pickedUp || game.deckSize === 0)) socket.emit("game:play", []);
 	};
 	const onClickChooseColor = (index: number) => {
 		if (room.state === "play" && game.configurationState === "color" && game.yourTurn) socket.emit("game:configure", { color: index, type: "color" });
@@ -167,7 +167,7 @@ export default function GamePage() {
 							Play Card{selected.length > 1 ? "s" : ""}
 						</button>
 					)}
-					{game.yourTurn && game.pickedUp && (
+					{game.yourTurn && (game.pickedUp || game.deckSize === 0) && (
 						<button className={styles.pass} onClick={onClickPass}>
 							Pass
 						</button>
