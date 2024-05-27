@@ -11,13 +11,13 @@ import { canMatch, canPlay, getPickupValue, PlayedCard } from "../../../common/c
 import { CSSTransition, TransitionGroup } from "react-transition-group";
 import { motion } from "framer-motion";
 import fontColorContrast from "font-color-contrast";
-import { Roboto } from "next/font/google";
 import React from "react";
-
-const roboto = Roboto({ subsets: ["latin"], weight: ["400", "500", "900"] });
+import { roboto } from "@/font";
+;
 
 const DeckCard = ({ index, length, ...other }: { index: number; length: number }) => {
 	const ref = useRef(null);
+	const modulus = length < 300 ? 2 : 3;
 	return (
 		<CSSTransition
 			nodeRef={ref}
@@ -33,7 +33,8 @@ const DeckCard = ({ index, length, ...other }: { index: number; length: number }
 				style={{
 					"--deck-index": index,
 					position: index === 0 ? "relative" : undefined,
-					visibility: length - index > 10 ? (index % 2 === 1 ? undefined : "hidden") : (length % 2 === 0 ? index % 2 === 1 : index % 2 === 0) ? undefined : "hidden",
+					"--d": modulus,
+					display: length - index > 10 ? (index % modulus === 0 ? undefined : "none") : undefined,
 				}}
 			>
 				{length - 1 === index ? <BackCard height="12em" /> : <EmptyCard height="12em" />}
@@ -131,7 +132,7 @@ export default function GamePage() {
 		<main className={styles.main} {...(game.yourTurn ? { "data-turn": true } : null)}>
 			<div
 				className={styles.table}
-				style={{
+				style={game.deckSize > 500 ? { "--offset-x": 0, "--offset-y": 0} : {
 					"--offset-x": `${-(mouse.x - innerWidth / 2) / 15}px`,
 					"--offset-y": `${-(mouse.y - innerHeight / 2) / 15}px`,
 				}}
@@ -145,7 +146,7 @@ export default function GamePage() {
 				>
 					<TransitionGroup component={null}>
 						{[...Array(Math.ceil(Math.min(game.deckSize, 300)))].map((_, i, a) => (
-							<DeckCard key={i} index={i} length={a.length} />
+							<DeckCard key={game.deckSize > 300 ? (game.deckSize - 300) + i : i} index={i} length={a.length} />
 						))}
 					</TransitionGroup>
 				</button>

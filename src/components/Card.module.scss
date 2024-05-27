@@ -38,10 +38,12 @@
 .smallTop,
 .smallBottom {
 	font-size: 30cqmin;
-	text-shadow: #000000 -2.2cqmin 2.2cqmin;
-	-webkit-text-stroke: black 1.4cqmin;
+    text-shadow: #000000 -3.3cqmin 3.3cqmin;
 	z-index: 2;
 	letter-spacing: -1cqmin;
+    -webkit-text-stroke: black 4cqmin;
+    paint-order: stroke fill;
+    font-variation-settings: "wght" 624.4;
 }
 
 .smallTop {
@@ -71,13 +73,15 @@
 	justify-content: center;
 	z-index: 1;
 	color: #d6daec;
-	text-shadow: #000000aa -3.6cqmin 3.6cqmin;
+	text-shadow: #000000aa -4cqmin 4cqmin;
 	translate: 0.1cqmin 0;
-	-webkit-text-stroke: #000000cc 2cqmin;
+	-webkit-text-stroke: #000000cc 5cqmin;
 	text-align: center;
 	letter-spacing: -1cqmin;
 	line-height: 30cqmin;
 	font-size: 34cqmin;
+    paint-order: stroke fill;
+    font-weight: 500;
 }
 .bigNumber,
 .bigIcon {
@@ -91,10 +95,12 @@
 	justify-content: center;
 }
 .bigNumber {
-	text-shadow: #000000 -4.4cqmin 4.4cqmin;
-	translate: 0.1cqmin 0;
-	-webkit-text-stroke: black 2.2cqmin;
-	z-index: 1;
+    text-shadow: #000000 -5.4cqmin 5.7cqmin;
+    translate: 0.1cqmin 0;
+    -webkit-text-stroke: black 5.8cqmin;
+    z-index: 1;
+    paint-order: stroke fill;
+    font-variation-settings: "wght" 624.4;
 }
 .bigIcon {
 	z-index: 1;

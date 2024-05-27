@@ -17,20 +17,6 @@ export default function Home() {
 	}, [router])
 	return (
 		<main className={styles.main}>
-			<button
-				onClick={() =>
-					socket.emit(
-						"room:create",
-						{
-							name: "test",
-							unlisted: false,
-						},
-						console.log
-					)
-				}
-			>
-				Create
-			</button>
 			<button onClick={() => socket.emit("room:start")}>start</button>
 			<button onClick={() => socket.emit("room:join", "test")}>join</button>
 			<section style={{ display: "flex", flexDirection: "column" }}>

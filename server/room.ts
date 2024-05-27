@@ -1,3 +1,4 @@
+import { defaultConstants, GameConstants, selectableRules } from "../common/cards/card";
 import { shuffle } from "../common/util/util";
 import { players } from "./auth";
 import { gameManager, type Game } from "./game";
@@ -6,6 +7,7 @@ import type { EventCallback, TypedServer, TypedSocket } from "./types";
 interface RoomCreateOptions {
 	name: string;
 	unlisted: boolean;
+	rules: string;
 }
 export interface ClientRoomData {
 	name: string;
@@ -50,6 +52,7 @@ export interface BaseRoom {
 	unlisted: boolean;
 	max: number;
 	lateJoins: boolean;
+	rules: GameConstants;
 }
 export interface LobbyRoom extends BaseRoom {
 	state: "lobby";
@@ -146,6 +149,7 @@ export const roomManager = {
 			name: options.name,
 			players: [owner],
 			unlisted: options.unlisted,
+			rules: selectableRules[options.rules as keyof typeof selectableRules] ?? defaultConstants
 		};
 		this._roomPlayerCache[owner] = room;
 		this.rooms[room.name] = room;

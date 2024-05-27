@@ -1,0 +1,18 @@
+.main {
+	display: flex;
+	flex-direction: column;
+	gap: 0.3em;
+	padding: 0.5em;
+	background-color: #000000;
+	color: white;
+}
+.main > section {
+	display: flex;
+	flex-direction: column;
+	gap: 0.3em;
+	section {
+		display: flex;
+		gap: 0.3em;
+		flex-wrap: wrap;
+	}
+}

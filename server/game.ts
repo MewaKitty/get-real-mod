@@ -6,15 +6,12 @@ import {
 	canMatch,
 	canPlay,
 	Card,
-	constants,
 	createDeck,
 	createPlayingDeck,
+	GameConstants,
 	getPickupValue,
 	getTotalPickupValue,
-	isNormalCard,
-	isNormalColorCard,
 	modifyPickupValue,
-	multicolor,
 	PlayedCard,
 } from "../common/cards/card";
 import { shuffle } from "../common/util/util";
@@ -94,10 +91,10 @@ export const gameManager = {
 	},
 	startGame(io: TypedServer, room: StartingRoom) {
 		const players = shuffle(room.players);
-		const deck = shuffle(createPlayingDeck());
-		const startCardIndex = deck.findIndex(x => isNormalCard(x) && isNormalColorCard(x));
+		const deck = shuffle(createPlayingDeck(room.rules));
+		const startCardIndex = deck.findIndex(x => room.rules.numbers.includes(x.type) && typeof x.color === "string");
 		const [startCard] = deck.splice(startCardIndex === -1 ? 0 : startCardIndex, 1);
-		if (!isNormalColorCard(startCard)) startCard.colorOverride = constants.colors[Math.floor(Math.random() * constants.colors.length)];
+		if (startCard.color instanceof Array) startCard.colorOverride = startCard.color[Math.floor(Math.random() * startCard.color.length)];
 		room.game = {
 			currIndex: 0,
 			deck,
@@ -267,7 +264,7 @@ export const registerGameEvents = (io: TypedServer, socket: TypedSocket) => {
 			game.discard.push(game.currentCard, ...newDiscards);
 			game.currentCard = cards.at(-1)!;
 
-			if (!isNormalColorCard(game.currentCard)) {
+			if (game.currentCard.color instanceof Array) {
 				game.configurationState = {
 					type: "color",
 					playedCards: cards as PlayedCard[],

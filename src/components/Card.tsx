@@ -1,13 +1,13 @@
-import { Roboto } from "next/font/google";
+
+import { roboto } from "@/font";
 import styles from "./Card.module.scss";
 import { icons } from "./icons";
 import mix from "mix-css-color";
 
-const roboto = Roboto({ subsets: ["latin"], weight: ["400", "500", "900"] });
-
 const sizeForSymbol = (symbol: string) => {
 	if (symbol.length === 1) {
-		if (/A-Z/.exec(symbol)) return "small";
+		if (/∞/.exec(symbol)) return "smaller";
+		if (/[A-Z]/.exec(symbol)) return "small";
 		return "normal";
 	}
 	if (symbol.length === 2) return "smaller";

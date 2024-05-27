@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { useAuth, useRoom, useRoomList } from "../util/context";
 import { RoomListItem } from "./RoomListItem";
 import styles from "./rooms.module.scss";
+import { selectableRules } from "../../../common/cards/card";
 
 export default function RoomsPage() {
 	const room = useRoom();
@@ -12,6 +13,7 @@ export default function RoomsPage() {
 	const auth = useAuth();
 	const roomList = useRoomList();
 	const [name, setName] = useState("");
+	const [option, setOption] = useState("normal");
 	useEffect(() => {
 		if (auth.name === null) router.replace("/setup");
 		else if (room !== null && room !== undefined) router.replace("/room");
@@ -29,7 +31,10 @@ export default function RoomsPage() {
 		<section>
 			<h1>Create Room</h1>
 			<input className={styles.createInput} placeholder="Name" value={name} onChange={e => setName(e.target.value)} />
-			<button className={styles.createButton} onClick={() => name.trim() && socket.emit("room:create", { name, unlisted: false }, () => {})}>Create</button>
+			Rules: <select value={option} onChange={x => setOption(x.target.value)}>
+				{Object.keys(selectableRules).map(x => <option key={x} value={x}>{x}</option>)}
+			</select>
+			<button className={styles.createButton} onClick={() => name.trim() && socket.emit("room:create", { name, unlisted: false, rules: option }, () => {})}>Create</button>
 		</section>
 	</main>;
 }
