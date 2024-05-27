@@ -77,6 +77,7 @@ export default function GamePage() {
 	const [mouse] = useMouse();
 	const [selected, setSelected] = useState<string[]>([]);
 	const [pickingUp, setPickingUp] = useState(false);
+	const handRef = useRef<HTMLDivElement | null>(null);
 
 
 
@@ -181,7 +182,10 @@ export default function GamePage() {
 					GET REAL!
 				</button>
 				<Flipper flipKey={game.hand.map(x => x.id).join("")}>
-					<div className={styles.hand}>
+					<div className={styles.hand} ref={handRef} onWheel={e => {
+						e.preventDefault();
+						handRef.current?.scrollBy({ left: e.deltaY });
+					}}>
 						{game.hand.map((x, i, a) => (
 							<Flipped flipId={x.id} key={x.id}>
 								<button

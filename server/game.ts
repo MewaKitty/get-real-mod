@@ -9,6 +9,7 @@ import {
 	createDeck,
 	createPlayingDeck,
 	GameConstants,
+	GameRules,
 	getPickupValue,
 	getTotalPickupValue,
 	modifyPickupValue,
@@ -47,11 +48,14 @@ export interface ClientGameData {
 	pickup: number;
 	lastPlayer: string;
 	winners: { name: string; extra?: string }[];
+	rules: GameRules;
 }
 
 export interface EnhancedClientGameData extends ClientGameData {
 	get yourTurn(): boolean;
 }
+
+
 
 export interface Game {
 	deck: PlayedCard[];
@@ -81,6 +85,7 @@ export interface Game {
 	winners: { id: string; extra?: string }[];
 	takeDeck(count: number): PlayedCard[];
 	takeCard(): PlayedCard | null;
+	rules: GameRules;
 }
 
 export const gameManager = {
@@ -91,8 +96,8 @@ export const gameManager = {
 	},
 	startGame(io: TypedServer, room: StartingRoom) {
 		const players = shuffle(room.players);
-		const deck = shuffle(createPlayingDeck(room.rules));
-		const startCardIndex = deck.findIndex(x => room.rules.numbers.includes(x.type) && typeof x.color === "string");
+		const deck = shuffle(createPlayingDeck(room.deckType));
+		const startCardIndex = deck.findIndex(x => room.deckType.numbers.includes(x.type) && typeof x.color === "string");
 		const [startCard] = deck.splice(startCardIndex === -1 ? 0 : startCardIndex, 1);
 		if (startCard.color instanceof Array) startCard.colorOverride = startCard.color[Math.floor(Math.random() * startCard.color.length)];
 		room.game = {
@@ -111,6 +116,7 @@ export const gameManager = {
 			pickup: 0,
 			lastPlayer: "",
 			winners: [],
+			rules: room.rules,
 			takeDeck(count: number) {
 				const took = this.deck.splice(0, count);
 				if (took.length < count) {
@@ -128,7 +134,7 @@ export const gameManager = {
 			},
 		};
 		for (const player of Object.values(room.game.players)) {
-			player.cards.push(...deck.splice(0, 10));
+			player.cards.push(...deck.splice(0, room.game.rules.startingCards));
 		}
 		gameManager.resendGame(room);
 		setTimeout(() => {
@@ -152,6 +158,7 @@ export const gameManager = {
 			pickup: game.pickup,
 			lastPlayer: players[game.lastPlayer]?.name,
 			winners: game.winners.map(x => ({ name: players[x.id].name, extra: x.extra })),
+			rules: game.rules
 		};
 	},
 	byPlayer(playerId: string) {
@@ -164,29 +171,37 @@ export const gameManager = {
 
 		game.canPlay = true;
 
-		if (cards.length === 0) return;
+		if (game.deck.length === 0) {
+			const newDeck = shuffle(game.discard);
+			for (const card of newDeck) delete card.colorOverride;
+			game.discard = [];
+			game.deck = newDeck;
+		}
 
-		if (game.currentCard.type === "skip") {
+		if (cards[0]?.type === "skip") {
 			for (const _ of cards) {
 				game.currIndex = game.playerList.indexOf(game.nextPlayer);
 				game.nextPlayer = game.playerList[(game.currIndex + game.order + game.playerList.length) % game.playerList.length];
 				players[game.nextPlayer].socket.emit("game:effect", "skip");
 			}
-		} else if (game.currentCard.type === "reverse") {
+		} else if (cards[0]?.type === "reverse") {
 			for (const _ of cards) game.order *= -1;
 			if (cards.length % 2 === 1) for (const player of game.playerList) players[player].socket.emit("game:effect", "reverse");
 		}
 		if (game.pickup !== 0) {
 			game.pickup = modifyPickupValue(game.pickup, cards as Card[]) ?? game.pickup;
-		} else {
+		} else if (cards.length > 0) {
 			const pickup = getTotalPickupValue(game.nextPlayer, game, cards as Card[]);
 			if (pickup !== null) {
 				game.pickup = pickup;
 			}
 		}
-		game.currIndex = game.playerList.indexOf(game.nextPlayer);
-		game.nextPlayer = game.playerList[(game.currIndex + game.order + game.playerList.length) % game.playerList.length];
-		
+
+		if (!game.rules.pickupUntilPlayable || cards.length > 0) {
+			game.currIndex = game.playerList.indexOf(game.nextPlayer);
+			game.nextPlayer = game.playerList[(game.currIndex + game.order + game.playerList.length) % game.playerList.length];
+		}
+
 		if (game.players[game.lastPlayer].cards.length === 0) {
 			const currentPlayer = game.playerList[game.currIndex];
 			game.winners.push({ id: game.lastPlayer });
@@ -217,7 +232,7 @@ export const registerGameEvents = (io: TypedServer, socket: TypedSocket) => {
 		game.players[socket.data.playerId].called = true;
 		for (const [id, data] of Object.entries(game.players)) {
 			if (data.cards.length === 1 && !data.called) {
-				for (const card of game.takeDeck(2)) data.cards.push(card);
+				for (const card of game.takeDeck(game.rules.unrealPenalty)) data.cards.push(card);
 				gameManager.resendGame(game.room);
 				players[id].socket.emit("game:pickup", 2);
 			}

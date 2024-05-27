@@ -172,6 +172,7 @@
 	.playCards,
 	.pass,
 	.pickup {
+		color: black;
 		background-color: white;
 		font-size: 2em;
 		padding: 0.2em 0.5em;
@@ -237,11 +238,16 @@
 	max-width: 100%;
 	gap: 0.5em;
 	margin: 0 auto;
+	height: 17em;
 	z-index: 2;
+	overflow-x: auto;
+	scrollbar-color: black white;
+	scrollbar-width: thin;
 	.handCard {
 		flex-shrink: 1;
 		transition: flex-shrink 0.2s, transform 0.2s, filter 0.2s;
-		min-width: 0;
+		min-width: 2em;
+		margin-top: auto;
 		&:last-child {
 			flex-shrink: 0;
 		}

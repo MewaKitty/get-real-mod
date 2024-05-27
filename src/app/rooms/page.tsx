@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { useAuth, useRoom, useRoomList } from "../util/context";
 import { RoomListItem } from "./RoomListItem";
 import styles from "./rooms.module.scss";
-import { selectableRules } from "../../../common/cards/card";
+import { deckTypes, defaultRules } from "../../../common/cards/card";
 
 export default function RoomsPage() {
 	const room = useRoom();
@@ -14,27 +14,45 @@ export default function RoomsPage() {
 	const roomList = useRoomList();
 	const [name, setName] = useState("");
 	const [option, setOption] = useState("normal");
+	const [rules, setRules] = useState(defaultRules);
 	useEffect(() => {
 		if (auth.name === null) router.replace("/setup");
 		else if (room !== null && room !== undefined) router.replace("/room");
 	}, [room, router, auth]);
-	const skeletons = [...Array(5)].map((_, i) => <RoomListItem room={null} key={i} canJoin={false} />)
-	return <main className={styles.main}>
-		<h1>Rooms</h1>
-		<section className={styles.roomList}>
-			{
-				roomList === undefined ? skeletons : roomList.filter(x => x.lateJoins ? x.state !== "end" : x.state === "lobby").map(x =>
-					<RoomListItem room={x} key={x.name} canJoin={true} />
-				)
-			}
-		</section>
-		<section>
-			<h1>Create Room</h1>
-			<input className={styles.createInput} placeholder="Name" value={name} onChange={e => setName(e.target.value)} />
-			Rules: <select value={option} onChange={x => setOption(x.target.value)}>
-				{Object.keys(selectableRules).map(x => <option key={x} value={x}>{x}</option>)}
-			</select>
-			<button className={styles.createButton} onClick={() => name.trim() && socket.emit("room:create", { name, unlisted: false, rules: option }, () => {})}>Create</button>
-		</section>
-	</main>;
+	const skeletons = [...Array(5)].map((_, i) => <RoomListItem room={null} key={i} canJoin={false} />);
+	return (
+		<main className={styles.main}>
+			<h1>Rooms</h1>
+			<section className={styles.roomList}>
+				{roomList === undefined
+					? skeletons
+					: roomList.filter(x => (x.lateJoins ? x.state !== "end" : x.state === "lobby")).map(x => <RoomListItem room={x} key={x.name} canJoin={true} />)}
+			</section>
+			<section style={{ flexDirection: "column" }}>
+				<h1>Create Room</h1>
+				<input className={styles.createInput} placeholder="Name" value={name} onChange={e => setName(e.target.value)} />
+				<div>
+					Rules:{" "}
+					<select value={option} onChange={x => setOption(x.target.value)}>
+						{Object.keys(deckTypes).map(x => (
+							<option key={x} value={x}>
+								{x}
+							</option>
+						))}
+					</select>
+				</div>
+				<div>
+					{Object.entries(rules).map(([key, value]) => (
+						<div key={key}>
+							{key}:
+							<input value={JSON.stringify(value)} onChange={x => setRules({ ...rules, [key]: JSON.parse(x.target.value) })} />
+						</div>
+					))}
+				</div>
+				<button className={styles.createButton} onClick={() => name.trim() && socket.emit("room:create", { name, unlisted: false, deckType: option, rules }, () => {})}>
+					Create
+				</button>
+			</section>
+		</main>
+	);
 }

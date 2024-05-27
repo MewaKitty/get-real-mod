@@ -23,7 +23,9 @@ export const GameHandler = ({ children }: { children: React.ReactNode }) => {
 			socket.onAnyOutgoing(console.log.bind(console, "OUT"));
 		}
 		const id = getPlayerId();
-		socket.emit("auth:id", id);
+		socket.emit("auth:id", id, () => {
+			if (name !== null) socket.emit("auth:name", name, console.log);
+		});
 		socket.on("room:data", x => {
 			setRoom(x);
 		});

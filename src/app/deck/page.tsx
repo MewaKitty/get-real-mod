@@ -1,11 +1,11 @@
 "use client";
 import { BackCard, Card } from "@/components/Card";
 import styles from "./deck.module.scss";
-import { createDeck, mapGroupBy, selectableRules } from "../../../common/cards/card";
+import { createDeck, mapGroupBy, deckTypes } from "../../../common/cards/card";
 import { useMemo } from "react";
 
 export default function Deck() {
-	const decks = useMemo(() => Object.entries(selectableRules).map(([name, rules]) => [name, mapGroupBy(createDeck(rules), x => x.color)] as const), []);
+	const decks = useMemo(() => Object.entries(deckTypes).map(([name, rules]) => [name, mapGroupBy(createDeck(rules), x => x.color)] as const), []);
 	return (
 		<main className={styles.main}>
 			{decks.map(([name, cards]) => (

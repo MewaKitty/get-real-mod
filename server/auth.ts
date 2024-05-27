@@ -5,7 +5,7 @@ import { roomManager } from "./room";
 
 
 export interface AuthC2SEvents {
-	"auth:id": (id: string) => void;
+	"auth:id": (id: string, cb: () => void) => void;
 	"auth:name": (name: string, cb: EventCallback<boolean>) => void;
 }
 
@@ -16,8 +16,10 @@ export interface AuthS2CEvents {
 export const players: Record<string, { socket: TypedSocket, name: string }> = {};
 
 const handleConnect = (afterAuth: (socket: TypedSocket) => void) => (socket: TypedSocket) => {
-	socket.once("auth:id", id => {
+	console.log("CONNCT")
+	socket.once("auth:id", (id, cb) => {
 		socket.data.playerId = id;
+		cb();
 	});
 	socket.on("auth:name", (name, cb) => {
 		if (!socket.data.playerId) return;

@@ -1,4 +1,4 @@
-import { defaultConstants, GameConstants, selectableRules } from "../common/cards/card";
+import { deckTypes, defaultConstants, GameConstants, GameRules } from "../common/cards/card";
 import { shuffle } from "../common/util/util";
 import { players } from "./auth";
 import { gameManager, type Game } from "./game";
@@ -7,7 +7,8 @@ import type { EventCallback, TypedServer, TypedSocket } from "./types";
 interface RoomCreateOptions {
 	name: string;
 	unlisted: boolean;
-	rules: string;
+	deckType: string;
+	rules: GameRules;
 }
 export interface ClientRoomData {
 	name: string;
@@ -52,7 +53,8 @@ export interface BaseRoom {
 	unlisted: boolean;
 	max: number;
 	lateJoins: boolean;
-	rules: GameConstants;
+	deckType: GameConstants;
+	rules: GameRules;
 }
 export interface LobbyRoom extends BaseRoom {
 	state: "lobby";
@@ -82,12 +84,12 @@ export const roomManager = {
 		if (room === undefined || room.players.includes(playerId) || this.byPlayer(playerId) !== undefined) return;
 		if (room.state === "end") return;
 		if (room.state === "lobby" || room.lateJoins) {
-			if (room.state !== "lobby" && room.game.deck.length < 10) return;
+			if (room.state !== "lobby" && room.game.deck.length < room.game.rules.startingCards) return;
 			room.players.push(playerId);
 			this._roomPlayerCache[playerId] = room;
 			this.resendData(roomId);
 			if (room.state !== "lobby") {
-				room.game.players[playerId] = { cards: [...room.game.deck.splice(0, 10)], called: false };
+				room.game.players[playerId] = { cards: [...room.game.deck.splice(0, room.game.rules.startingCards)], called: false };
 				room.game.playerList.push(playerId);
 				gameManager.resendGame(room);
 			}
@@ -149,7 +151,8 @@ export const roomManager = {
 			name: options.name,
 			players: [owner],
 			unlisted: options.unlisted,
-			rules: selectableRules[options.rules as keyof typeof selectableRules] ?? defaultConstants
+			deckType: deckTypes[options.deckType as keyof typeof deckTypes] ?? defaultConstants,
+			rules: options.rules
 		};
 		this._roomPlayerCache[owner] = room;
 		this.rooms[room.name] = room;

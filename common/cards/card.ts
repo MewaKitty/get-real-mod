@@ -22,7 +22,7 @@ export type GameConstants = {
 	amountPerWild: number;
 	amountPerNumberOverride: { [key: number | string]: number };
 	extra: (() => Card[]) | Card[];
-	copies: number;
+	copies?: number;
 };
 
 export const defaultConstants: GameConstants = {
@@ -42,7 +42,6 @@ export const defaultConstants: GameConstants = {
 	amountPerWild: 2,
 	amountPerNumberOverride: { "0": 1 },
 	extra: [],
-	copies: 1,
 } satisfies GameConstants;
 
 export const originalConstants = {
@@ -60,7 +59,6 @@ export const originalConstants = {
 	amountPerWild: 0,
 	amountPerNumberOverride: { "0": 1 },
 	extra: (): Card[] => [...Array(8).fill({ type: " ", color: originalConstants.colors })],
-	copies: 1,
 } satisfies GameConstants;
 
 export const cursedConstants = {
@@ -86,10 +84,9 @@ export const cursedConstants = {
 		{ type: "reverse", variety: "both", count: 8 },
 		{ type: "💀", variety: "both", count: 1 },
 	],
-	copies: 1,
 	extra: [{ color: "pink", type: "π" }, { color: "pink", type: "π" }, ...Array(4).fill({ color: ["blue", "#eee", "red"], type: "FR" })],
 } satisfies GameConstants;
-export const selectableRules = {
+export const deckTypes = {
 	normal: defaultConstants,
 	original: originalConstants,
 	cursed: cursedConstants,
@@ -114,7 +111,7 @@ export const createDeck = (constants: GameConstants): Card[] => {
 		}
 	}
 	deck.push(...structuredClone(constants.extra instanceof Function ? constants.extra() : constants.extra));
-	return [...Array(constants.copies)].fill(deck).flat();
+	return [...Array(constants.copies ?? 1)].fill(deck).flat();
 };
 
 export const createPlayingDeck = (constants: GameConstants): PlayedCard[] => createDeck(constants).map(x => ({ ...x, id: v4() }));
@@ -191,3 +188,15 @@ export const mapGroupBy = <T, K>(array: T[], mapper: (value: T) => K) => {
 	}
 	return map;
 };
+
+
+export interface GameRules {
+	pickupUntilPlayable: boolean;
+	startingCards: number;
+	unrealPenalty: number;
+}
+export const defaultRules = {
+	pickupUntilPlayable: false,
+	startingCards: 10,
+	unrealPenalty: 2,
+} satisfies GameRules;
