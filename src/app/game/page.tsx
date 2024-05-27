@@ -87,7 +87,7 @@ export default function GamePage() {
 			setPickingUp(true);
 			setTimeout(() => setPickingUp(false), 500);
 		})
-	}, [room, router]);
+	}, [auth, room, router]);
 	if (room === undefined || room === null || game === undefined || game === null) return <main className={styles.main}></main>;
 
 	const onClickDeck = () => {

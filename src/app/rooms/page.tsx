@@ -17,7 +17,7 @@ export default function RoomsPage() {
 		else if (room !== null) router.replace("/room");
 	}, [room, router, auth]);
 	const skeletons = [...Array(5)].map((_, i) => <RoomListItem room={null} key={i} canJoin={false} />)
-	return <main>
+	return <main className={styles.main}>
 		<h1>Rooms</h1>
 		<section className={styles.roomList}>
 			{
@@ -28,8 +28,8 @@ export default function RoomsPage() {
 		</section>
 		<section>
 			<h1>Create Room</h1>
-			<input value={name} onChange={e => setName(e.target.value)} />
-			<button onClick={() => name.trim() && socket.emit("room:create", { name, unlisted: false }, () => {})}>Create</button>
+			<input className={styles.createInput} placeholder="Name" value={name} onChange={e => setName(e.target.value)} />
+			<button className={styles.createButton} onClick={() => name.trim() && socket.emit("room:create", { name, unlisted: false }, () => {})}>Create</button>
 		</section>
 	</main>;
 }
