@@ -9,10 +9,10 @@ export default function SetupPage() {
 	const [input, setInput] = useState("");
 	const auth = useAuth();
 	useEffect(() => {
-		if (room !== null) router.replace("/room")
+		if (room !== undefined && room !== null) router.replace("/room")
 	}, [room, router]);
 	const submit = (value: string) => {
-		if (room !== null) return;
+		if (room !== null && room !== undefined) return;
 		auth.setName(value);
 		router.push("/rooms")
 	}
