@@ -80,7 +80,8 @@ export default function GamePage() {
 
 
 	useEffect(() => {
-		if (room === null) router.replace("/rooms");
+		if (auth.name === null) router.replace("/setup")
+		else if (room === null) router.replace("/rooms");
 		else if (room !== undefined && room.state !== "play" && room.state !== "starting" && room.state !== "end") router.replace("/room");
 		socket.on("game:pickup", () => {
 			setPickingUp(true);

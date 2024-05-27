@@ -10,7 +10,8 @@ export default function RoomPage() {
 	const router = useRouter();
 	const auth = useAuth();
 	useEffect(() => {
-		if (room === null) router.replace("/rooms");
+		if (auth.name === null) router.replace("/setup")
+		else if (room === null) router.replace("/rooms");
 		else if (room !== undefined && (room.state === "play" || room.state === "starting" || room.state === "end")) router.replace("/game");
 	}, [room, router]);
 	const onClickStart = () => {
