@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { useAuth, useRoom, useRoomList } from "../util/context";
 import { RoomListItem } from "./RoomListItem";
 import styles from "./rooms.module.scss";
-import { deckTypes, defaultRules } from "../../../common/cards/card";
+import { GameRules, deckTypes, defaultRules } from "../../../common/cards/card";
 
 export default function RoomsPage() {
 	const room = useRoom();
@@ -14,7 +14,7 @@ export default function RoomsPage() {
 	const roomList = useRoomList();
 	const [name, setName] = useState("");
 	const [option, setOption] = useState("normal");
-	const [rules, setRules] = useState(defaultRules);
+	const [rules, setRules] = useState<Record<keyof typeof defaultRules, string>>(Object.fromEntries(Object.entries(defaultRules).map(x => [x, JSON.stringify(x)])));
 	useEffect(() => {
 		if (auth.name === null) router.replace("/setup");
 		else if (room !== null && room !== undefined) router.replace("/room");
@@ -45,11 +45,13 @@ export default function RoomsPage() {
 					{Object.entries(rules).map(([key, value]) => (
 						<div key={key}>
 							{key}:
-							<input value={JSON.stringify(value)} onChange={x => setRules({ ...rules, [key]: JSON.parse(x.target.value) })} />
+							<input value={value} onChange={x => setRules({ ...rules, [key]: x.target.value})} />
 						</div>
 					))}
 				</div>
-				<button className={styles.createButton} onClick={() => name.trim() && socket.emit("room:create", { name, unlisted: false, deckType: option, rules }, () => {})}>
+				<button className={styles.createButton} onClick={() => name.trim() && socket.emit("room:create", { name, unlisted: false, deckType: option, rules: Object.fromEntries(Object.entries(rules).map(x => [x[0], JSON.parse(x[1])])) as GameRules }, () => {
+					router.push("/room");
+				})}>
 					Create
 				</button>
 			</section>

@@ -93,14 +93,28 @@ export default function GamePage() {
 			setSelected([]);
 		}
 	};
+	const justClicked = useRef<Record<string, number>>({});
 	const onClickCard = (id: string) => {
 		if (room.state !== "play" || !game.canPlay || !game.yourTurn) return;
 		const card = game.hand.find(x => x.id === id);
 		if (card === undefined) return;
-		if (selected.includes(id)) setSelected(x => x.slice(0, x.indexOf(id)));
+		if (selected.includes(id) && !(Date.now() < justClicked.current[id])) setSelected(x => {
+			const y = x.toSpliced(x.indexOf(id), 1);
+			const mismatch = y.findIndex((x, i, a) => i !== 0 && !canMatch(
+				game.hand.find(z => z.id === a[i - 1])!,
+				game.hand.find(z => z.id === x)!));
+			if (mismatch !== -1) return y.slice(0, mismatch);
+			return y;
+		});
 		else if (selected.length > 0) {
-			if (canMatch(game.hand.find(x => x.id === selected.at(-1))!, card)) setSelected(x => x.concat(id));
-		} else if ((!game.pickup || getPickupValue(card) !== null) && canPlay(game.currentCard, card)) setSelected(x => x.concat(id));
+			if (canMatch(game.hand.find(x => x.id === selected.at(-1))!, card)) {
+				justClicked.current[id] = Date.now() + 400;
+				setSelected(x => x.concat(id));
+			};
+		} else if ((!game.pickup || getPickupValue(card) !== null) && canPlay(game.currentCard, card)) {
+			justClicked.current[id] = Date.now() + 400;
+			setSelected(x => x.concat(id));
+		};
 	};
 	const onRightClickCard = (event: React.MouseEvent, id: string) => {
 		event.preventDefault();
@@ -154,9 +168,9 @@ export default function GamePage() {
 					game.deckSize > 500
 						? { "--offset-x": 0, "--offset-y": 0 }
 						: {
-								"--offset-x": `${-(mouse.x - innerWidth / 2) / 15}px`,
-								"--offset-y": `${-(mouse.y - innerHeight / 2) / 15}px`,
-						  }
+							"--offset-x": `${-(mouse.x - innerWidth / 2) / 15}px`,
+							"--offset-y": `${-(mouse.y - innerHeight / 2) / 15}px`,
+						}
 				}
 			>
 				<button
@@ -222,10 +236,10 @@ export default function GamePage() {
 									className={styles.handCard}
 									{...(selected.includes(x.id) ? { "data-selected": true } : null)}
 									{...(game.yourTurn &&
-									!selected.includes(x.id) &&
-									(selected.length === 0
-										? !canPlay(game.currentCard, x) || (game.pickup && getPickupValue(x) === null)
-										: !canMatch(game.hand.find(y => y.id === selected.at(-1))!, x))
+										!selected.includes(x.id) &&
+										(selected.length === 0
+											? !canPlay(game.currentCard, x) || (game.pickup && getPickupValue(x) === null)
+											: !canMatch(game.hand.find(y => y.id === selected.at(-1))!, x))
 										? { "data-disabled": true }
 										: null)}
 									onClick={() => onClickCard(x.id)}
@@ -243,28 +257,28 @@ export default function GamePage() {
 				<div className={styles.colorConfig} style={{
 					"--column-count": [0, 1, 2, 3, 2, 3, 3, 4, 4][game.currentCard.color.length] ?? (
 						game.currentCard.color.length % 5 === 0 ? 5
-						: game.currentCard.color.length % 4 === 0 ? 4
-						: game.currentCard.color.length % 3 === 0 ? 3
-						: game.currentCard.color.length % 2 === 0 ? game.currentCard.color.length / 2
-						: 5
+							: game.currentCard.color.length % 4 === 0 ? 4
+								: game.currentCard.color.length % 3 === 0 ? 3
+									: game.currentCard.color.length % 2 === 0 ? game.currentCard.color.length / 2
+										: 5
 					)
 				}}>
 					{game.currentCard.color instanceof Array
 						? game.currentCard.color.map((x, i) => (
-								<div key={x}>
-									<button style={{ backgroundColor: x, color: fontColorContrast(x) }} className={x} aria-label={x} onClick={() => onClickChooseColor(i)}></button>
-								</div>
-						  ))
+							<div key={x}>
+								<button style={{ backgroundColor: x, color: fontColorContrast(x) }} className={x} aria-label={x} onClick={() => onClickChooseColor(i)}></button>
+							</div>
+						))
 						: "?"}
 				</div>
 			)}
 			{game.yourTurn && game.configurationState === "swap-player" && (
 				<div className={styles.playerConfig}>
 					{game.playerList.filter(x => x !== auth.name).map(x => (
-								<div key={x}>
-									<button style={{ backgroundColor: x }} className={x} aria-label={x} onClick={() => onClickChooseSwapPlayer(x)}>{x}</button>
-								</div>
-						  ))}
+						<div key={x}>
+							<button style={{ backgroundColor: x }} className={x} aria-label={x} onClick={() => onClickChooseSwapPlayer(x)}>{x}</button>
+						</div>
+					))}
 				</div>
 			)}
 			<div className={styles.temporary}>

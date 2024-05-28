@@ -90,7 +90,7 @@ export const cursedConstants = {
 		{ type: "+∞", variety: "wild", count: 2 },
 		{ type: "÷0", variety: "wild", count: 2 },
 		{ type: "+?", variety: "both", count: 4 },
-		{ type: "2ˣ", variety: "wild", count: 1 },
+		{ type: "2ˣ", variety: "wild", count: 2 },
 		{ type: "^2", variety: "wild", count: 2 },
 		{ type: "skip", variety: "both", count: 8 },
 		{ type: "reverse", variety: "both", count: 8 },
@@ -163,6 +163,7 @@ export const allMatch = (cards: Card[]) => {
 export const getPickupValue = (card: Card) => {
 	if (typeof card.type !== "string") return null;
 	if (card.type.length === 1) return null;
+	if (card.type.endsWith("ˣ")) return { type: "exp", value: +card.type.slice(0, -1)}
 	const rawValue = card.type.slice(1);
 	const value = rawValue === "∞" ? Infinity :
 		rawValue === "π" ? Math.PI :
