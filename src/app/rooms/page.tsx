@@ -32,7 +32,7 @@ export default function RoomsPage() {
 				<h1>Create Room</h1>
 				<input className={styles.createInput} placeholder="Name" value={name} onChange={e => setName(e.target.value)} />
 				<div>
-					Rules:{" "}
+					Deck:{" "}
 					<select value={option} onChange={x => setOption(x.target.value)}>
 						{Object.keys(deckTypes).map(x => (
 							<option key={x} value={x}>

@@ -1,18 +1,22 @@
-
 import { roboto } from "@/font";
 import styles from "./Card.module.scss";
 import { icons } from "./icons";
 import mix from "mix-css-color";
 
 const sizeForSymbol = (symbol: string) => {
-	if (symbol.length === 1) {
-		if (/∞/.exec(symbol)) return "smaller";
-		if (/[A-Z]/.exec(symbol)) return "small";
-		return "normal";
-	}
-	if (symbol.length === 2) return "smaller";
-	if (symbol.length === 3) return "smallest";
-	if (symbol.length >= 4) return "smallester";
+	const practicalLength = symbol
+		.split("")
+		.map(x => (/[A-Z∞]/.exec(x) ? 1.25 : /[★]/.exec(x) ? 2.5 : /[.]/.exec(x) ? 0 : 1))
+		.reduce((l, c) => l + c, 0 as number);
+	if (practicalLength < 2) return "normal";
+	if (practicalLength <= 2) return "smaller";
+	if (practicalLength <= 2.5) return "smallerer";
+	if (practicalLength < 4) return "smallest";
+	if (practicalLength >= 4) return "smallester";
+};
+const spacingForSymbol = (symbol: string) => {
+	if (/\p{Lm}/u.exec(symbol)) return "large";
+	return "normal";
 };
 
 const elementForSymbol = (symbol: string) => {
@@ -57,30 +61,33 @@ const ringBackgroundForColor = (color: string | string[], colorOverride: string 
 	if (real instanceof Array && real.length > 1) {
 		return `conic-gradient(${real.flatMap((x, i, a) => [`${x} ${(360 / a.length) * i}deg`, `${x} ${(360 / a.length) * (i + 1)}deg`]).join(", ")})`;
 	}
-	return (typeof real === "string" ? real : real[0]);
+	return typeof real === "string" ? real : real[0];
 };
 
 interface CardOptions {
 	color: string | string[];
 	symbol: string;
 	flipped?: boolean;
-	size?: "normal" | "small" | "smaller" | "smallest" | "smallester";
+	size?: "normal" | "small" | "smaller" | "smallerer" | "smallest" | "smallester";
+	spacing?: "normal" | "large";
 	height?: string;
 	pinned?: boolean;
 	colorOverride?: string;
 }
 
 const CardRing = ({ color, colorOverride }: { color: string | string[]; colorOverride: string | undefined }) => {
-	return <div
-		className={styles.ring}
-		style={{
-			background: ringBackgroundForColor(color, colorOverride),
-			"--color-override": colorOverride ? mix("transparent", colorOverride, 50).hexa : ""
-		}}
-	></div>
-}
+	return (
+		<div
+			className={styles.ring}
+			style={{
+				background: ringBackgroundForColor(color, colorOverride),
+				"--color-override": colorOverride ? mix("transparent", colorOverride, 50).hexa : "",
+			}}
+		></div>
+	);
+};
 
-export const Card = ({ color, symbol, flipped = false, size = sizeForSymbol(symbol), height = "100px", pinned = false, colorOverride }: CardOptions) => {
+export const Card = ({ color, symbol, flipped = false, size = sizeForSymbol(symbol), spacing = spacingForSymbol(symbol), height = "100px", pinned = false, colorOverride }: CardOptions) => {
 	return (
 		<article
 			className={`${roboto.className} ${styles.cardWrapper}`}
@@ -90,9 +97,10 @@ export const Card = ({ color, symbol, flipped = false, size = sizeForSymbol(symb
 				className={styles.card}
 				style={{
 					background: cardBackgroundForColor(color, colorOverride),
-					"--color-override": colorOverride ?? ""
+					"--color-override": colorOverride ?? "",
 				}}
 				data-size={size}
+				data-spacing={spacing}
 				data-foo={JSON.stringify(colorOverride)}
 			>
 				{sideElementForSymbol(symbol)}
@@ -117,23 +125,19 @@ export const BackCard = ({ height = "100px", flipped = false, pinned = false }: 
 		</article>
 	);
 };
-export const EmptyCard = ({ height = "100px" }: { height?: string; }) => {
+export const EmptyCard = ({ height = "100px" }: { height?: string }) => {
 	return (
-		<article
-			className={`${roboto.className} ${styles.cardWrapper}`}
-			style={{ height }}
-		>
-		<div className={styles.card} style={{ backgroundColor: "white" }} data-size="normal">
-		</div>
+		<article className={`${roboto.className} ${styles.cardWrapper}`} style={{ height }}>
+			<div className={styles.card} style={{ backgroundColor: "white" }} data-size="normal"></div>
 		</article>
 	);
 };
 
-export const DualCard = ({ height = "100px", flipped = false, color, symbol, size = sizeForSymbol(symbol) }: Omit<CardOptions, "pinned">) => {
+export const DualCard = ({ height = "100px", flipped = false, color, symbol, size = sizeForSymbol(symbol), spacing = spacingForSymbol(symbol) }: Omit<CardOptions, "pinned">) => {
 	return (
 		<article className={styles.dualCard} style={{ height }}>
 			<BackCard height={height} pinned flipped={flipped} />
-			<Card symbol={symbol} color={color} height={height} flipped={!flipped} size={size} pinned />
+			<Card symbol={symbol} spacing={spacing} color={color} height={height} flipped={!flipped} size={size} pinned />
 		</article>
 	);
 };

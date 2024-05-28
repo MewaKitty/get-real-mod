@@ -21,7 +21,7 @@ import { players } from "./auth";
 
 export interface GameC2SEvents {
 	"game:play": (cards: string[]) => void;
-	"game:configure": (options: { type: "color"; color: number }) => void;
+	"game:configure": (options: { type: "color"; color: number } | { type: "swap-player", player: string }) => void;
 	"game:pickup": () => void;
 	"game:call": () => void;
 }
@@ -44,7 +44,7 @@ export interface ClientGameData {
 	hand: PlayedCard[];
 	canPlay: boolean;
 	pickedUp: boolean;
-	configurationState: null | "color";
+	configurationState: null | "color" | "swap-player";
 	pickup: number;
 	lastPlayer: string;
 	winners: { name: string; extra?: string }[];
@@ -54,8 +54,6 @@ export interface ClientGameData {
 export interface EnhancedClientGameData extends ClientGameData {
 	get yourTurn(): boolean;
 }
-
-
 
 export interface Game {
 	deck: PlayedCard[];
@@ -76,7 +74,7 @@ export interface Game {
 	room: StartingRoom | PlayingRoom;
 	pickedUp: boolean;
 	configurationState: null | {
-		type: "color";
+		type: "color" | "swap-player";
 		playedCards: PlayedCard[];
 		card: PlayedCard;
 	};
@@ -158,7 +156,7 @@ export const gameManager = {
 			pickup: game.pickup,
 			lastPlayer: players[game.lastPlayer]?.name,
 			winners: game.winners.map(x => ({ name: players[x.id].name, extra: x.extra })),
-			rules: game.rules
+			rules: game.rules,
 		};
 	},
 	byPlayer(playerId: string) {
@@ -212,7 +210,10 @@ export const gameManager = {
 
 		if (game.playerList.length === 0 || (game.playerList.length === 1 && game.winners.length > 0)) {
 			if (game.playerList.length > 0 && game.pickup !== 0) {
-				for (const card of game.takeDeck(game.pickup)) game.players[game.playerList[0]].cards.push(card);
+				if (game.pickup > 0) for (const card of game.takeDeck(game.pickup)) game.players[game.playerList[0]].cards.push(card);
+				else
+					for (let i = 0; i < -game.pickup; i++)
+						game.deck.push(...game.players[game.playerList[0]].cards.splice(Math.floor(Math.random() * game.players[game.playerList[0]].cards.length), 1));
 				players[game.playerList[game.currIndex]].socket.emit("game:pickup", game.pickup);
 				game.pickup = 0;
 			}
@@ -279,7 +280,15 @@ export const registerGameEvents = (io: TypedServer, socket: TypedSocket) => {
 			game.discard.push(game.currentCard, ...newDiscards);
 			game.currentCard = cards.at(-1)!;
 
-			if (game.currentCard.color instanceof Array) {
+			if (game.currentCard.type === "swap") {
+				game.configurationState = {
+					type: "swap-player",
+					playedCards: cards as PlayedCard[],
+					card: game.currentCard,
+				};
+				gameManager.resendGame(game.room);
+				return;
+			} else if (game.currentCard.color instanceof Array) {
 				game.configurationState = {
 					type: "color",
 					playedCards: cards as PlayedCard[],
@@ -287,7 +296,7 @@ export const registerGameEvents = (io: TypedServer, socket: TypedSocket) => {
 				};
 				gameManager.resendGame(game.room);
 				return;
-			}
+			} 
 		}
 
 		gameManager.nextPlayer(cards as PlayedCard[], game);
@@ -306,10 +315,16 @@ export const registerGameEvents = (io: TypedServer, socket: TypedSocket) => {
 		const game = gameManager.byPlayer(socket.data.playerId);
 		if (game === null) return;
 		if (game.playerList[game.currIndex] !== socket.data.playerId) return;
-		if (!game.canPlay) return;
+		if (!game.canPlay || game.pickup === 0) return;
 
-		for (const card of game.takeDeck(game.pickup)) game.players[socket.data.playerId].cards.push(card);
+		if (game.pickup > 0) for (const card of game.takeDeck(game.pickup)) game.players[socket.data.playerId].cards.push(card);
+		else
+			for (let i = 0; i < -game.pickup; i++)
+				game.deck.push(...game.players[game.playerList[0]].cards.splice(Math.floor(Math.random() * game.players[game.playerList[0]].cards.length), 1));
 		players[game.playerList[game.currIndex]].socket.emit("game:pickup", game.pickup);
+		if (game.players[socket.data.playerId].cards.length === 0) {
+			gameManager.nextPlayer([] as PlayedCard[], game);
+		}
 		game.pickup = 0;
 		gameManager.resendGame(game.room);
 	});
@@ -323,6 +338,23 @@ export const registerGameEvents = (io: TypedServer, socket: TypedSocket) => {
 			const colorIndex = opts.color;
 			const chosen = game.configurationState.card.color[colorIndex];
 			game.currentCard.colorOverride = chosen;
+			gameManager.nextPlayer(game.configurationState.playedCards, game);
+			game.configurationState = null;
+			gameManager.resendGame(game.room);
+		} else if (game.configurationState.type === "swap-player" && opts.type === "swap-player") {
+			const player = opts.player;
+			const matched = game.playerList.find(x => players[x].name === player);
+			if (matched === undefined || matched === socket.data.playerId) return;
+			[game.players[socket.data.playerId].cards, game.players[matched].cards] = [game.players[matched].cards, game.players[socket.data.playerId].cards];
+			if (game.currentCard.color instanceof Array) {
+				game.configurationState = {
+					type: "color",
+					playedCards: game.configurationState.playedCards,
+					card: game.configurationState.card,
+				};
+				gameManager.resendGame(game.room);
+				return;
+			} 
 			gameManager.nextPlayer(game.configurationState.playedCards, game);
 			game.configurationState = null;
 			gameManager.resendGame(game.room);

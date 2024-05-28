@@ -1,5 +1,6 @@
 import { v4 } from "uuid";
 import { Game } from "../../server/game";
+import { randomGaussian } from "@/app/util/util";
 
 export interface Card {
 	type: string | number;
@@ -10,7 +11,7 @@ export interface PlayedCard extends Card {
 	colorOverride?: string;
 }
 
-export type CardType = number | string | `+${number}` | `×${number}` | "reverse" | "skip";
+export type CardType = number | string;
 
 export type GameConstants = {
 	colors: string[];
@@ -62,10 +63,10 @@ export const originalConstants = {
 } satisfies GameConstants;
 
 export const cursedConstants = {
-	colors: ["red", "orange", "yellow", "green", "blue", "purple", "#eee", "gray", "black", "#c5e386", "#c8d7f7", "teal"],
+	colors: ["#eeeeee", "#c9c9c9", "#757575", "#1c1c1c", "#8f0000", "#ff0000", "#ff8c00", "#ffdd00", "#0fe000", "#00ffa2", "#00eaff", "#00aeff", "#006eff", "#ee00ff", "#fbbfff"],
 	wilds: [],
-	includeMulticolorWild: true, // don't duplicate numbers
-	numbers: ["θ", "Δ", -3, "π", "∞", "φ", "ψ", "Ω", "λ", "μ", "α", "Ω", "τ", "ξ", "ζ", "χ", "ω", "½", "א", "$", "÷"],
+	includeMulticolorWild: true,
+	numbers: ["θ", "Δ", -3, "π", "φ", "ψ", "Ω", "λ", "μ", "α", "Ω", "τ", "ξ", "ζ", "χ", "ω", "½", "א", "$", "Σ", "∫", "√", "&"],
 	amountPerNumber: 2,
 	amountPerWild: 1,
 	amountPerNumberOverride: { π: 4 },
@@ -76,10 +77,21 @@ export const cursedConstants = {
 		{ type: "+16", variety: "both", count: 4 },
 		{ type: "+32", variety: "both", count: 4 },
 		{ type: "+64", variety: "both", count: 4 },
+		{ type: "×0", variety: "wild", count: 2 },
 		{ type: "×2", variety: "both", count: 4 },
 		{ type: "×4", variety: "both", count: 4 },
 		{ type: "×8", variety: "both", count: 4 },
 		{ type: "×1.5", variety: "both", count: 4 },
+		{ type: "−2", variety: "both", count: 4 },
+		{ type: "−4", variety: "both", count: 4 },
+		{ type: "−8", variety: "both", count: 4 },
+		{ type: "÷2", variety: "both", count: 4 },
+		{ type: "÷4", variety: "both", count: 4 },
+		{ type: "+∞", variety: "wild", count: 2 },
+		{ type: "÷0", variety: "wild", count: 2 },
+		{ type: "+?", variety: "both", count: 4 },
+		{ type: "2ˣ", variety: "wild", count: 1 },
+		{ type: "^2", variety: "wild", count: 2 },
 		{ type: "skip", variety: "both", count: 8 },
 		{ type: "reverse", variety: "both", count: 8 },
 		{ type: "💀", variety: "both", count: 1 },
@@ -88,7 +100,16 @@ export const cursedConstants = {
 } satisfies GameConstants;
 export const deckTypes = {
 	normal: defaultConstants,
+	normalWithSwap: {
+		...defaultConstants,
+		special: defaultConstants.special.concat({ type: "swap", variety: "wild", count: 4 })
+	},
 	original: originalConstants,
+	originalWithSwap: {
+		...originalConstants,
+		special: originalConstants.special.concat({ type: "swap", variety: "wild", count: 4 }),
+		extra: () => originalConstants.extra().slice(4),
+	},
 	cursed: cursedConstants,
 } satisfies Record<string, GameConstants>;
 
@@ -141,13 +162,22 @@ export const allMatch = (cards: Card[]) => {
 
 export const getPickupValue = (card: Card) => {
 	if (typeof card.type !== "string") return null;
-	if (card.type.startsWith("+")) return { type: "add", value: +card.type.slice(1) };
-	if (card.type.startsWith("×")) return { type: "multiply", value: +card.type.slice(1) };
+	if (card.type.length === 1) return null;
+	const rawValue = card.type.slice(1);
+	const value = rawValue === "∞" ? Infinity :
+		rawValue === "π" ? Math.PI :
+		rawValue === "?" ? Math.ceil(Math.abs(randomGaussian(6, 4))) : +rawValue;
+	if (isNaN(value)) return null;
+	if (card.type.startsWith("+")) return { type: "add", value };
+	if (card.type.startsWith("−")) return { type: "add", value: -value };
+	if (card.type.startsWith("×")) return { type: "multiply", value };
+	if (card.type.startsWith("÷")) return { type: "multiply", value: 1 / value };
+	if (card.type.startsWith("^")) return { type: "power", value };
 	return null;
 };
 
 export interface CardValue {
-	type: "add" | "multiply";
+	type: "add" | "multiply" | "power" | "exp";
 }
 
 export const modifyPickupValue = (initial: number, cards: Card[]) => {
@@ -157,6 +187,8 @@ export const modifyPickupValue = (initial: number, cards: Card[]) => {
 		if (val === null) return null;
 		if (val.type === "add") value += val.value;
 		if (val.type === "multiply") value *= val.value;
+		if (val.type === "power") value **= val.value;
+		if (val.type === "exp") value = val.value ** value;
 	}
 	return value;
 };
@@ -164,9 +196,11 @@ export const modifyPickupValue = (initial: number, cards: Card[]) => {
 export const getInitialPickupValue = (nextPlayerId: string, game: Game, card: Card) => {
 	const value = getPickupValue(card);
 	if (value === null) return null;
-	if (value.type === "multiply") return game.players[nextPlayerId].cards.length * (value.value - 1);
 	if (value.type === "add") return value.value;
-	return null;
+	if (value.type === "multiply") return game.players[nextPlayerId].cards.length * (value.value - 1);
+	const final = modifyPickupValue(game.players[nextPlayerId].cards.length, [card]);
+	if (final === null) return null;
+	return final - game.players[nextPlayerId].cards.length;
 };
 
 export const getTotalPickupValue = (nextPlayerId: string, game: Game, cards: Card[]) => {

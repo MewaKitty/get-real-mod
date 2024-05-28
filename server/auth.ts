@@ -16,7 +16,6 @@ export interface AuthS2CEvents {
 export const players: Record<string, { socket: TypedSocket, name: string }> = {};
 
 const handleConnect = (afterAuth: (socket: TypedSocket) => void) => (socket: TypedSocket) => {
-	console.log("CONNCT")
 	socket.once("auth:id", (id, cb) => {
 		socket.data.playerId = id;
 		cb();

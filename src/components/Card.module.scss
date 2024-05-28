@@ -164,10 +164,27 @@
 	}
 }
 
+.card[data-size="smallerer"] {
+	.bigNumber {
+		font-size: 50cqmin;
+		translate: -1.5cqmin 0;
+	}
+	.smallTop,
+	.smallBottom {
+		font-size: 23cqmin;
+	}
+	.smallTop {
+		left: 6cqmin;
+	}
+
+	.smallBottom {
+		right: 6cqmin;
+	}
+}
 .card[data-size="smallest"] {
 	.bigNumber {
-		font-size: 44cqmin;
-		translate: 0 0;
+		font-size: 42cqmin;
+		translate: -1cqmin 0;
 	}
 	.smallTop,
 	.smallBottom {
@@ -200,6 +217,13 @@
 		right: 2cqmin;
 	}
 }
+.card[data-spacing="large"] {
+	letter-spacing: 2cqmin;
+	.smallTop,
+	.smallBottom {
+		letter-spacing: 2cqmin;
+	}
+}
 .dualCard {
 	&:hover {
 		transform: rotateY(180deg);
@@ -210,3 +234,4 @@
 	aspect-ratio: 2 / 3;
 	position: relative;
 }
+
