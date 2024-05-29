@@ -75,6 +75,7 @@ export default function GamePage() {
 	const [selected, setSelected] = useState<string[]>([]);
 	const [pickingUp, setPickingUp] = useState(false);
 	const handRef = useRef<HTMLDivElement | null>(null);
+	const justClicked = useRef<Record<string, number>>({});
 
 	useEffect(() => {
 		if (auth.name === null) router.replace("/setup");
@@ -93,12 +94,11 @@ export default function GamePage() {
 			setSelected([]);
 		}
 	};
-	const justClicked = useRef<Record<string, number>>({});
 	const onClickCard = (id: string) => {
 		if (room.state !== "play" || !game.canPlay || !game.yourTurn) return;
 		const card = game.hand.find(x => x.id === id);
 		if (card === undefined) return;
-		if (selected.includes(id) && !(Date.now() < justClicked.current[id])) setSelected(x => {
+		if (selected.includes(id) && (!(id in justClicked.current) || justClicked.current[id] < Date.now())) setSelected(x => {
 			const y = x.toSpliced(x.indexOf(id), 1);
 			const mismatch = y.findIndex((x, i, a) => i !== 0 && !canMatch(
 				game.hand.find(z => z.id === a[i - 1])!,
