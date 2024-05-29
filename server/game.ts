@@ -176,16 +176,45 @@ export const gameManager = {
 			game.deck = newDeck;
 		}
 
-		if (cards[0]?.type === "skip") {
+		if (cards[0]?.type === "reverse" || cards[0]?.type === "reverseAndSkip") {
+			for (const _ of cards) game.order *= -1;
+			if (cards.length % 2 === 1) for (const player of game.playerList) players[player].socket.emit("game:effect", "reverse");
+		}
+
+		if (cards[0]?.type === "skip" || cards[0]?.type === "reverseAndSkip") {
 			for (const _ of cards) {
 				game.currIndex = game.playerList.indexOf(game.nextPlayer);
 				game.nextPlayer = game.playerList[(game.currIndex + game.order + game.playerList.length) % game.playerList.length];
 				players[game.nextPlayer].socket.emit("game:effect", "skip");
 			}
-		} else if (cards[0]?.type === "reverse") {
-			for (const _ of cards) game.order *= -1;
-			if (cards.length % 2 === 1) for (const player of game.playerList) players[player].socket.emit("game:effect", "reverse");
 		}
+
+		if (cards[0]?.type === "removeSameColor") {
+			const deck = game.players[game.lastPlayer].cards
+			for (const played of cards) {
+				for (const card of deck) {
+					if (card.color !== played.color) continue;
+					deck.splice(deck.indexOf(card), 1);
+					game.discard.push(card)
+				}
+			}
+		}
+		if (cards[0]?.type === "shuffle") {
+			let cardPool = [];
+			for (const player of Object.values(game.players)) {
+				cardPool.push(...player.cards)
+			}
+			for (const player of Object.values(game.players)) {
+				const deckSize = player.cards.length;
+				player.cards = [];
+				for (let i = 0; i < deckSize; i++) {
+					const index = Math.floor(Math.random() * cardPool.length)
+					player.cards.push(cardPool[index])
+					cardPool.splice(index, 1)
+				}
+			}
+		}
+
 		if (game.pickup !== 0) {
 			game.pickup = modifyPickupValue(game.pickup, cards as Card[]) ?? game.pickup;
 		} else if (cards.length > 0) {

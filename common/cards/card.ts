@@ -27,7 +27,7 @@ export type GameConstants = {
 };
 
 export const defaultConstants: GameConstants = {
-	colors: ["red", "blue", "yellow", "green", "orange", "purple"],
+	colors: ["red", "blue", "yellow", "green", "orange", "purple", "pink", "gray"],
 	wilds: [],
 	includeMulticolorWild: true,
 	numbers: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
@@ -35,6 +35,9 @@ export const defaultConstants: GameConstants = {
 		{ type: "+2", variety: "normal", count: 2 },
 		{ type: "skip", variety: "normal", count: 2 },
 		{ type: "reverse", variety: "normal", count: 2 },
+		{ type: "reverseAndSkip", variety: "normal", count: 2 },
+		{ type: "removeSameColor", variety: "normal", count: 2 },
+		{ type: "shuffle", variety: "wild", count: 2 },
 		{ type: "+4", variety: "wild", count: 4 },
 		{ type: "+8", variety: "wild", count: 2 },
 		{ type: "×2", variety: "wild", count: 4 },
