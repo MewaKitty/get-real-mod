@@ -205,9 +205,9 @@ export const gameManager = {
 				cardPool.push(...player.cards)
 			}
 			for (const player of Object.values(game.players)) {
-				const deckSize = player.cards.length;
+				const handSize = player.cards.length;
 				player.cards = [];
-				for (let i = 0; i < deckSize; i++) {
+				for (let i = 0; i < handSize; i++) {
 					const index = Math.floor(Math.random() * cardPool.length)
 					player.cards.push(cardPool[index])
 					cardPool.splice(index, 1)
