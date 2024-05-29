@@ -190,17 +190,17 @@ export const gameManager = {
 		}
 
 		if (cards[0]?.type === "removeSameColor") {
-			const deck = game.players[game.lastPlayer].cards
+			const hand = game.players[game.lastPlayer].cards
 			for (const played of cards) {
-				for (const card of deck) {
+				for (const card of hand) {
 					if (card.color !== played.color) continue;
-					deck.splice(deck.indexOf(card), 1);
+					hand.splice(hand.indexOf(card), 1);
 					game.discard.push(card)
 				}
 			}
 		}
 		if (cards[0]?.type === "shuffle") {
-			let cardPool = [];
+			const cardPool = [];
 			for (const player of Object.values(game.players)) {
 				cardPool.push(...player.cards)
 			}
