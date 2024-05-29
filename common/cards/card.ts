@@ -166,7 +166,11 @@ export const allMatch = (cards: Card[]) => {
 export const getPickupValue = (card: Card) => {
 	if (typeof card.type !== "string") return null;
 	if (card.type.length === 1) return null;
-	if (card.type.endsWith("ˣ")) return { type: "exp", value: +card.type.slice(0, -1)}
+	if (card.type.endsWith("ˣ")) {
+		const base = +card.type.slice(0, -1);
+		if (isNaN(base)) return null;
+		return { type: "exp", value: base}
+	}
 	const rawValue = card.type.slice(1);
 	const value = rawValue === "∞" ? Infinity :
 		rawValue === "π" ? Math.PI :
@@ -194,6 +198,7 @@ export const modifyPickupValue = (initial: number, cards: Card[]) => {
 		if (val.type === "power") value **= val.value;
 		if (val.type === "exp") value = val.value ** value;
 	}
+	if (isNaN(value)) return null;
 	return value;
 };
 

@@ -21,7 +21,7 @@ import { players } from "./auth";
 
 export interface GameC2SEvents {
 	"game:play": (cards: string[]) => void;
-	"game:configure": (options: { type: "color"; color: number } | { type: "swap-player", player: string }) => void;
+	"game:configure": (options: { type: "color"; color: number } | { type: "swap-player"; player: string }) => void;
 	"game:pickup": () => void;
 	"game:call": () => void;
 }
@@ -240,9 +240,11 @@ export const gameManager = {
 		if (game.playerList.length === 0 || (game.playerList.length === 1 && game.winners.length > 0)) {
 			if (game.playerList.length > 0 && game.pickup !== 0) {
 				if (game.pickup > 0) for (const card of game.takeDeck(game.pickup)) game.players[game.playerList[0]].cards.push(card);
-				else
-					for (let i = 0; i < -game.pickup; i++)
+				else {
+					const iterCount = Math.min(-game.pickup, game.players[game.playerList[0]].cards.length);
+					for (let i = 0; i < iterCount; i++)
 						game.deck.push(...game.players[game.playerList[0]].cards.splice(Math.floor(Math.random() * game.players[game.playerList[0]].cards.length), 1));
+				}
 				players[game.playerList[game.currIndex]].socket.emit("game:pickup", game.pickup);
 				game.pickup = 0;
 			}
@@ -309,7 +311,7 @@ export const registerGameEvents = (io: TypedServer, socket: TypedSocket) => {
 			game.discard.push(game.currentCard, ...newDiscards);
 			game.currentCard = cards.at(-1)!;
 
-			if (game.currentCard.type === "swap") {
+			if (game.currentCard.type === "swap" && game.playerList.length > 1 && game.players[socket.data.playerId].cards.length >= 1) {
 				game.configurationState = {
 					type: "swap-player",
 					playedCards: cards as PlayedCard[],
@@ -325,7 +327,7 @@ export const registerGameEvents = (io: TypedServer, socket: TypedSocket) => {
 				};
 				gameManager.resendGame(game.room);
 				return;
-			} 
+			}
 		}
 
 		gameManager.nextPlayer(cards as PlayedCard[], game);
@@ -347,9 +349,11 @@ export const registerGameEvents = (io: TypedServer, socket: TypedSocket) => {
 		if (!game.canPlay || game.pickup === 0) return;
 
 		if (game.pickup > 0) for (const card of game.takeDeck(game.pickup)) game.players[socket.data.playerId].cards.push(card);
-		else
-			for (let i = 0; i < -game.pickup; i++)
+		else {
+			const iterCount = Math.min(-game.pickup, game.players[game.playerList[0]].cards.length);
+			for (let i = 0; i < iterCount; i++)
 				game.deck.push(...game.players[game.playerList[0]].cards.splice(Math.floor(Math.random() * game.players[game.playerList[0]].cards.length), 1));
+		}
 		players[game.playerList[game.currIndex]].socket.emit("game:pickup", game.pickup);
 		if (game.players[socket.data.playerId].cards.length === 0) {
 			gameManager.nextPlayer([] as PlayedCard[], game);
@@ -383,7 +387,7 @@ export const registerGameEvents = (io: TypedServer, socket: TypedSocket) => {
 				};
 				gameManager.resendGame(game.room);
 				return;
-			} 
+			}
 			gameManager.nextPlayer(game.configurationState.playedCards, game);
 			game.configurationState = null;
 			gameManager.resendGame(game.room);
